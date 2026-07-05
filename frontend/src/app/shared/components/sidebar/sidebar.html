@@ -1,0 +1,24 @@
+<aside class="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <img [src]="logoSrc" alt="Dawam Logo" class="logo-img">
+  </div>
+
+  <!-- Menu -->
+  <div class="sidebar-menu-title">القائمة</div>
+  <nav class="sidebar-nav">
+    @for (item of menuItems; track item.route) {
+      @if (isVisible(item)) {
+        <a class="nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [title]="item.labelKey | translate">
+           <span class="nav-icon" [innerHTML]="item.icon"></span>
+           <span class="nav-label">{{ item.labelKey | translate }}</span>
+        </a>
+      }
+    }
+  </nav>
+
+</aside>

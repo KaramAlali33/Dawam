@@ -1,0 +1,298 @@
+<div class="leaves-container animate-fade-in">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <h1>{{ 'LEAVE.TITLE' | translate }}</h1>
+      <p>{{ 'LEAVE.SUBTITLE' | translate }}</p>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Demo switcher for Paired Testing -->
+      <button class="btn btn-demo-role" (click)="toggleSimulatedRole()">
+        <span class="role-badge" [class.manager]="isAdminOrHR()">
+          {{ (isAdminOrHR() ? 'RECRUITMENT.ROLE_ADMIN' : 'RECRUITMENT.ROLE_EMPLOYEE') | translate }}
+        </span>
+        <span class="toggle-text">{{ 'RECRUITMENT.SWITCH_ROLE' | translate }}</span>
+      </button>
+
+      <button class="btn btn-primary" (click)="openModal()">
+        <span class="btn-icon">+</span>
+        {{ 'LEAVE.REQUEST_LEAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Leave Balances Dashboard -->
+  <section class="balances-dashboard">
+    <!-- Annual Leave Card -->
+    <div class="balance-card annual-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <h3>{{ 'LEAVE.ANNUAL' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <div class="balance-numbers">
+          <span class="days-remaining">{{ userBalance().annual - userBalance().annualUsed }}</span>
+          <span class="total-label">/ {{ userBalance().annual }} {{ 'LEAVE.DAYS' | translate }}</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" [style.width.%]="((userBalance().annual - userBalance().annualUsed) / userBalance().annual) * 100"></div>
+        </div>
+        <div class="card-footer-info">
+          <span>{{ 'LEAVE.USED' | translate }}: {{ userBalance().annualUsed }} {{ 'LEAVE.DAYS' | translate }}</span>
+          <span>{{ 'LEAVE.BALANCE' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sick Leave Card -->
+    <div class="balance-card sick-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+        </div>
+        <h3>{{ 'LEAVE.SICK' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <div class="balance-numbers">
+          <span class="days-remaining">{{ userBalance().sick - userBalance().sickUsed }}</span>
+          <span class="total-label">/ {{ userBalance().sick }} {{ 'LEAVE.DAYS' | translate }}</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" [style.width.%]="((userBalance().sick - userBalance().sickUsed) / userBalance().sick) * 100"></div>
+        </div>
+        <div class="card-footer-info">
+          <span>{{ 'LEAVE.USED' | translate }}: {{ userBalance().sickUsed }} {{ 'LEAVE.DAYS' | translate }}</span>
+          <span>{{ 'LEAVE.BALANCE' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Leave Card -->
+    <div class="balance-card emergency-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </div>
+        <h3>{{ 'LEAVE.EMERGENCY' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <div class="balance-numbers">
+          <span class="days-remaining">{{ userBalance().emergency - userBalance().emergencyUsed }}</span>
+          <span class="total-label">/ {{ userBalance().emergency }} {{ 'LEAVE.DAYS' | translate }}</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" [style.width.%]="((userBalance().emergency - userBalance().emergencyUsed) / userBalance().emergency) * 100"></div>
+        </div>
+        <div class="card-footer-info">
+          <span>{{ 'LEAVE.USED' | translate }}: {{ userBalance().emergencyUsed }} {{ 'LEAVE.DAYS' | translate }}</span>
+          <span>{{ 'LEAVE.BALANCE' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Requests Info Card -->
+    <div class="balance-card stats-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        </div>
+        <h3>{{ 'LEAVE.TOTAL_REQUESTS' | translate }}</h3>
+      </div>
+      <div class="card-body stats-summary">
+        <div class="stat-row">
+          <span class="stat-dot dot-pending"></span>
+          <span class="stat-name">{{ 'STATUS.PENDING' | translate }}</span>
+          <span class="stat-count">{{ filteredRequests().length }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-dot dot-approved"></span>
+          <span class="stat-name">{{ 'STATUS.APPROVED' | translate }}</span>
+          <span class="stat-count">{{ leaveService.requests().length }} {{ 'LEAVE.DAYS' | translate }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Search Bar -->
+  <section class="controls-bar">
+    <div class="filter-tabs">
+      <button class="tab-btn" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+        {{ 'ATTENDANCE.ALL' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeFilter() === 'pending'" (click)="setFilter('pending')">
+        {{ 'STATUS.PENDING' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeFilter() === 'approved'" (click)="setFilter('approved')">
+        {{ 'STATUS.APPROVED' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeFilter() === 'rejected'" (click)="setFilter('rejected')">
+        {{ 'STATUS.REJECTED' | translate }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input 
+        type="text" 
+        [placeholder]="'EMPLOYEE.SEARCH_PLACEHOLDER' | translate" 
+        (input)="onSearchChange($event)"
+        [value]="searchQuery()">
+      <span class="search-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
+    </div>
+  </section>
+
+  <!-- Leave Request List / Table -->
+  <section class="requests-list">
+    <div class="table-responsive" *ngIf="filteredRequests().length > 0; else emptyState">
+      <table class="leaves-table">
+        <thead>
+          <tr>
+            <th *ngIf="isAdminOrHR()">{{ 'LEAVE.EMPLOYEE_NAME' | translate }}</th>
+            <th>{{ 'ATTENDANCE.COL_STATUS' | translate }}</th>
+            <th>{{ 'LEAVE.START_DATE' | translate }} - {{ 'LEAVE.END_DATE' | translate }}</th>
+            <th>{{ 'ATTENDANCE.COL_LATE' | translate }} ({{ 'LEAVE.DAYS' | translate }})</th>
+            <th>{{ 'LEAVE.REASON' | translate }}</th>
+            <th>{{ 'LEAVE.STATUS' | translate }}</th>
+            <th>{{ 'LEAVE.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of filteredRequests()" class="table-row-animate">
+            <td *ngIf="isAdminOrHR()" class="td-employee">
+              <div class="emp-info">
+                <div class="emp-avatar">{{ req.employeeName?.charAt(0) }}</div>
+                <span>{{ req.employeeName }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="type-badge" [ngClass]="getLeaveTypeClass(req.leaveType)">
+                {{ getLeaveTypeLabel(req.leaveType) | translate }}
+              </span>
+            </td>
+            <td class="td-dates">
+              <span class="date-range">{{ req.startDate }} ➔ {{ req.endDate }}</span>
+            </td>
+            <td class="td-days">
+              <strong>{{ req.totalDays }}</strong>
+            </td>
+            <td class="td-reason">
+              <p class="reason-text" [title]="req.reason">{{ req.reason }}</p>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(req.status)">
+                {{ getStatusLabel(req.status) | translate }}
+              </span>
+            </td>
+            <td class="td-actions">
+              <!-- Employee Actions (Only show for pending requests) -->
+              <ng-container *ngIf="!isAdminOrHR() && req.status === 'Pending'">
+                <button class="btn btn-action-cancel" (click)="cancelRequest(req.id)">
+                  {{ 'LEAVE.CANCEL' | translate }}
+                </button>
+              </ng-container>
+
+              <!-- Admin/HR Actions (Approve/Reject pending requests) -->
+              <ng-container *ngIf="isAdminOrHR() && req.status === 'Pending'">
+                <div class="admin-actions">
+                  <button class="btn btn-action-approve" (click)="approveRequest(req.id)">
+                    {{ 'LEAVE.APPROVE' | translate }}
+                  </button>
+                  <button class="btn btn-action-reject" (click)="rejectRequest(req.id)">
+                    {{ 'LEAVE.REJECT' | translate }}
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- Fallback metadata details for approved/rejected states -->
+              <span class="approver-info" *ngIf="req.status !== 'Pending' && req.approvedByName">
+                ✓ {{ req.approvedByName }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State View -->
+    <ng-template #emptyState>
+      <div class="empty-state-card">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <h3>{{ 'LEAVE.NO_RECORDS' | translate }}</h3>
+        <p>{{ 'LEAVE.SUBTITLE' | translate }}</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- Request Leave Modal Dialog -->
+  <div class="modal-overlay" *ngIf="showRequestModal()" (click)="closeModal()">
+    <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ 'LEAVE.REQUEST_LEAVE' | translate }}</h2>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Live Alerts -->
+        <div class="alert alert-danger" *ngIf="formError()">
+          {{ formError() | translate }}
+        </div>
+        <div class="alert alert-success" *ngIf="formSuccess()">
+          {{ formSuccess() | translate }}
+        </div>
+
+        <form (submit)="$event.preventDefault(); submitRequest()" class="modal-form">
+          <!-- Leave Type Selection -->
+          <div class="form-group">
+            <label class="form-label">{{ 'LEAVE.SELECT_TYPE' | translate }}</label>
+            <select class="form-input" [value]="selectedLeaveType()" (change)="selectedLeaveType.set($any($event.target).value)">
+              <option value="Annual">{{ 'LEAVE.ANNUAL' | translate }}</option>
+              <option value="Sick">{{ 'LEAVE.SICK' | translate }}</option>
+              <option value="Emergency">{{ 'LEAVE.EMERGENCY' | translate }}</option>
+            </select>
+          </div>
+
+          <!-- Date Fields Grid -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'LEAVE.START_DATE' | translate }}</label>
+              <input type="date" class="form-input" [value]="startDate()" (input)="startDate.set($any($event.target).value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'LEAVE.END_DATE' | translate }}</label>
+              <input type="date" class="form-input" [value]="endDate()" (input)="endDate.set($any($event.target).value)">
+            </div>
+          </div>
+
+          <!-- Live Days Calculator Preview -->
+          <div class="days-preview-box" *ngIf="requestedDays() > 0">
+            <span class="preview-title">{{ 'LEAVE.DURATION' | translate }}:</span>
+            <span class="preview-count">{{ requestedDays() }} {{ 'LEAVE.DAYS' | translate }}</span>
+          </div>
+
+          <!-- Reason -->
+          <div class="form-group">
+            <label class="form-label">{{ 'LEAVE.REASON' | translate }}</label>
+            <textarea 
+              rows="3" 
+              class="form-input form-textarea" 
+              [placeholder]="'LEAVE.REASON_PLACEHOLDER' | translate"
+              [value]="reason()"
+              (input)="reason.set($any($event.target).value)"></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ 'ACTIONS.DELETE' | translate }}</button>
+            <button type="submit" class="btn btn-primary">{{ 'LEAVE.REQUEST_LEAVE' | translate }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

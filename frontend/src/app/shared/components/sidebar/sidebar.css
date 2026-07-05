@@ -1,0 +1,119 @@
+.sidebar {
+  width: 280px;
+  min-height: 100vh;
+  background: var(--white);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.02);
+}
+
+:host-context(html[dir="rtl"]) .sidebar {
+  right: 0;
+  border-left: 1px solid var(--border-color);
+  border-right: none;
+  direction: ltr; /* Force the scrollbar to the right side of the screen */
+}
+
+:host-context(html[dir="rtl"]) .sidebar > * {
+  direction: rtl; /* Retain RTL rendering for the menu contents */
+}
+
+:host-context(html[dir="ltr"]) .sidebar {
+  left: 0;
+  border-right: 1px solid var(--border-color);
+  border-left: none;
+}
+
+/* Logo */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem 0.5rem 1rem;
+}
+
+.logo-img {
+  max-width: 100%;
+  max-height: 60px;
+  object-fit: contain;
+}
+
+/* Menu Title */
+.sidebar-menu-title {
+  padding: 0.5rem 1.5rem 0.5rem;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+}
+
+:host-context(html[dir="rtl"]) .sidebar-menu-title {
+  text-align: right;
+}
+
+:host-context(html[dir="ltr"]) .sidebar-menu-title {
+  text-align: left;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 0 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background: var(--bg-color);
+  color: var(--text-dark);
+}
+
+.nav-item.active {
+  background: #f0f7ff; /* Very light blue */
+  color: var(--primary-color);
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}

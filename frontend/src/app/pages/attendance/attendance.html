@@ -1,0 +1,272 @@
+<div class="attendance-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <h1 class="page-title">{{ 'ATTENDANCE.TITLE' | translate }}</h1>
+      <p class="page-subtitle">{{ 'ATTENDANCE.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <div class="date-picker-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <input type="date" class="date-input" [value]="selectedDate()" (change)="onDateChange($event)">
+      </div>
+      
+      <!-- Employee check in / check out actions -->
+      <ng-container *ngIf="!isAdminOrHR()">
+        <button class="btn-checkin" *ngIf="!hasCheckedInToday()" (click)="doCheckIn()">
+          تسجيل حضور
+        </button>
+        <button class="btn-checkout" *ngIf="hasCheckedInToday() && !hasCheckedOutToday()" (click)="doCheckOut()">
+          تسجيل انصراف
+        </button>
+        <span class="status-badge status-present" *ngIf="hasCheckedOutToday()">
+          تم إكمال الدوام اليوم
+        </span>
+      </ng-container>
+
+      <button class="btn-export">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>{{ 'ATTENDANCE.EXPORT' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Stats Cards -->
+  <div class="stats-row">
+    <div class="summary-card card-total">
+      <div class="summary-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </div>
+      <div class="summary-data">
+        <span class="summary-value">{{ summary().total }}</span>
+        <span class="summary-label">{{ 'ATTENDANCE.TOTAL' | translate }}</span>
+      </div>
+    </div>
+
+    <div class="summary-card card-present">
+      <div class="summary-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+      <div class="summary-data">
+        <span class="summary-value">{{ summary().present }}</span>
+        <span class="summary-label">{{ 'ATTENDANCE.PRESENT' | translate }}</span>
+      </div>
+      <div class="summary-badge badge-green">{{ presentPercentage }}%</div>
+    </div>
+
+    <div class="summary-card card-late">
+      <div class="summary-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      </div>
+      <div class="summary-data">
+        <span class="summary-value">{{ summary().late }}</span>
+        <span class="summary-label">{{ 'ATTENDANCE.LATE' | translate }}</span>
+      </div>
+      <div class="summary-badge badge-amber">{{ latePercentage }}%</div>
+    </div>
+
+    <div class="summary-card card-absent">
+      <div class="summary-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+      </div>
+      <div class="summary-data">
+        <span class="summary-value">{{ summary().absent }}</span>
+        <span class="summary-label">{{ 'ATTENDANCE.ABSENT' | translate }}</span>
+      </div>
+      <div class="summary-badge badge-red">{{ absentPercentage }}%</div>
+    </div>
+
+    <div class="summary-card card-leave">
+      <div class="summary-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      </div>
+      <div class="summary-data">
+        <span class="summary-value">{{ summary().onLeave }}</span>
+        <span class="summary-label">{{ 'ATTENDANCE.ON_LEAVE' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle Section: Chart + Quick Info -->
+  <div class="middle-section">
+
+    <!-- Donut Chart Card -->
+    <div class="chart-card">
+      <h3 class="section-heading">{{ 'ATTENDANCE.DISTRIBUTION' | translate }}</h3>
+      <div class="donut-container">
+        <div class="donut" [style.background]="donutSegments">
+          <div class="donut-hole">
+            <span class="donut-total">{{ summary().total }}</span>
+            <span class="donut-label">{{ 'ATTENDANCE.EMPLOYEE' | translate }}</span>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-item">
+            <span class="legend-dot dot-present"></span>
+            <span class="legend-text">{{ 'ATTENDANCE.PRESENT' | translate }}</span>
+            <span class="legend-value">{{ summary().present }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot dot-late"></span>
+            <span class="legend-text">{{ 'ATTENDANCE.LATE' | translate }}</span>
+            <span class="legend-value">{{ summary().late }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot dot-absent"></span>
+            <span class="legend-text">{{ 'ATTENDANCE.ABSENT' | translate }}</span>
+            <span class="legend-value">{{ summary().absent }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot dot-leave"></span>
+            <span class="legend-text">{{ 'ATTENDANCE.ON_LEAVE' | translate }}</span>
+            <span class="legend-value">{{ summary().onLeave }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Info Cards -->
+    <div class="quick-info-grid">
+      <div class="info-card">
+        <div class="info-icon icon-clock">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">{{ 'ATTENDANCE.AVG_CHECK_IN' | translate }}</span>
+          <span class="info-value">{{ summary().avgCheckIn }}</span>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon icon-logout">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">{{ 'ATTENDANCE.AVG_CHECK_OUT' | translate }}</span>
+          <span class="info-value">{{ summary().avgCheckOut }}</span>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon icon-schedule">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">{{ 'ATTENDANCE.WORK_HOURS' | translate }}</span>
+          <span class="info-value">08:00 - 16:00</span>
+        </div>
+      </div>
+      <div class="info-card highlight-info">
+        <div class="info-icon icon-star">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">{{ 'ATTENDANCE.ATTENDANCE_RATE' | translate }}</span>
+          <span class="info-value highlight-value">{{ presentPercentage + latePercentage }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-section">
+
+    <!-- Table Toolbar -->
+    <div class="table-toolbar">
+      <div class="toolbar-start">
+        <div class="search-input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" class="search-input" [placeholder]="'ATTENDANCE.SEARCH' | translate" (input)="onSearchChange($event)">
+        </div>
+      </div>
+      <div class="toolbar-end">
+        <div class="filter-chips">
+          <button class="chip" [class.chip-active]="activeFilter() === 'all'" (click)="setFilter('all')">
+            {{ 'ATTENDANCE.ALL' | translate }}
+          </button>
+          <button class="chip chip-present" [class.chip-active]="activeFilter() === 'Present'" (click)="setFilter('Present')">
+            {{ 'ATTENDANCE.PRESENT' | translate }}
+          </button>
+          <button class="chip chip-late" [class.chip-active]="activeFilter() === 'Late'" (click)="setFilter('Late')">
+            {{ 'ATTENDANCE.LATE' | translate }}
+          </button>
+          <button class="chip chip-absent" [class.chip-active]="activeFilter() === 'Absent'" (click)="setFilter('Absent')">
+            {{ 'ATTENDANCE.ABSENT' | translate }}
+          </button>
+          <button class="chip chip-leave" [class.chip-active]="activeFilter() === 'OnLeave'" (click)="setFilter('OnLeave')">
+            {{ 'ATTENDANCE.ON_LEAVE' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'ATTENDANCE.COL_EMPLOYEE' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_STATUS' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_CHECK_IN' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_CHECK_OUT' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_LATE' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_OVERTIME' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_NOTES' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (record of filteredRecords(); track record.id) {
+              <tr class="table-row" [class.row-absent]="record.status === 'Absent'" [class.row-late]="record.status === 'Late'">
+                <td>
+                  <div class="employee-cell">
+                    <div class="avatar-circle" [class.avatar-present]="record.status === 'Present'" [class.avatar-late]="record.status === 'Late'" [class.avatar-absent]="record.status === 'Absent'" [class.avatar-leave]="record.status === 'OnLeave'">
+                      {{ getInitials(record.employeeName || '') }}
+                    </div>
+                    <span class="employee-name">{{ record.employeeName }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(record.status)">
+                    {{ getStatusLabel(record.status) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="time-value" [class.no-value]="!record.checkIn">{{ record.checkIn || '—' }}</span>
+                </td>
+                <td>
+                  <span class="time-value" [class.no-value]="!record.checkOut">{{ record.checkOut || '—' }}</span>
+                </td>
+                <td>
+                  <span class="late-value" [class.has-late]="record.lateMinutes > 0">{{ formatLate(record.lateMinutes) }}</span>
+                </td>
+                <td>
+                  <span class="overtime-value" [class.has-overtime]="record.overtimeMinutes > 0">{{ formatOvertime(record.overtimeMinutes) }}</span>
+                </td>
+                <td>
+                  <span class="notes-text">{{ record.notes || '—' }}</span>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <div class="empty-content">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="15" x2="16" y2="15"></line><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                    <p>{{ 'ATTENDANCE.NO_RECORDS' | translate }}</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer -->
+      <div class="table-footer">
+        <span class="footer-info">{{ 'ATTENDANCE.SHOWING' | translate }} {{ filteredRecords().length }} {{ 'ATTENDANCE.OF' | translate }} {{ records().length }} {{ 'ATTENDANCE.RECORDS' | translate }}</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

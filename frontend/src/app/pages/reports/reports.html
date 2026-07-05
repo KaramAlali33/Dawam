@@ -1,0 +1,390 @@
+<div class="reports-container animate-fade-in">
+
+  <!-- Simulation & Top Bar -->
+  <header class="reports-header no-print">
+    <div class="header-titles">
+      <h1 class="page-title">{{ 'REPORTS_PAGE.TITLE' | translate }}</h1>
+      <p class="page-subtitle">{{ 'REPORTS_PAGE.SUBTITLE' | translate }}</p>
+    </div>
+
+    <div class="simulation-actions">
+      <span class="active-badge" [ngClass]="isHRManagerMode() ? 'badge-admin' : 'badge-employee'">
+        {{ (isHRManagerMode() ? 'REPORTS_PAGE.ROLE_HR_MANAGER' : 'REPORTS_PAGE.ROLE_HR_SPECIALIST') | translate }}
+      </span>
+      <button class="btn btn-secondary btn-switch" (click)="toggleRole()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-spin">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+        {{ 'RECRUITMENT.SWITCH_ROLE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Toast Alert -->
+  @if (alertMessage()) {
+    <div class="toast-alert no-print">
+      <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25"></circle>
+        <path d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor"></path>
+      </svg>
+      <span>{{ alertMessage() }}</span>
+    </div>
+  }
+
+  <!-- Filters Row -->
+  <div class="filters-card no-print">
+    <div class="filter-inputs">
+      <div class="filter-group">
+        <label for="dept-select">{{ 'REPORTS_PAGE.FILTER_DEPT' | translate }}</label>
+        <select id="dept-select" class="form-select" [value]="selectedDept()" (change)="onDeptChange($any($event.target).value)">
+          <option value="ALL">🔍 {{ 'ATTENDANCE.ALL' | translate }}</option>
+          <option value="تقنية المعلومات">💻 {{ 'DEPARTMENTS.EMPLOYEE' | translate }} تقنية المعلومات</option>
+          <option value="الموارد البشرية">🤝 {{ 'DEPARTMENTS.EMPLOYEE' | translate }} الموارد البشرية</option>
+          <option value="المالية">💰 {{ 'DEPARTMENTS.EMPLOYEE' | translate }} المالية</option>
+          <option value="التصميم والتطوير">🎨 {{ 'DEPARTMENTS.EMPLOYEE' | translate }} التصميم والتطوير</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="cycle-select">{{ 'REPORTS_PAGE.FILTER_CYCLE' | translate }}</label>
+        <select id="cycle-select" class="form-select" [value]="selectedCycle()" (change)="selectedCycle.set($any($event.target).value)">
+          <option value="2026">📅 2026</option>
+          <option value="2025">📅 2025</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary-gradient btn-print" (click)="printReport()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      {{ 'REPORTS_PAGE.PRINT_REPORT' | translate }}
+    </button>
+  </div>
+
+  <!-- ==================== A. CORPORATE ANALYTICS DASHBOARD ==================== -->
+  @if (true) {
+    
+    <!-- Top-level KPI Analytics Cards -->
+    <div class="kpi-grid">
+      
+      @if (isHRManagerMode()) {
+        <div class="kpi-card">
+          <div class="kpi-icon icon-budget">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">{{ 'REPORTS_PAGE.METRIC_BUDGET' | translate }}</span>
+            <span class="kpi-value">{{ reportsService.companyMetrics().totalMonthlyPayroll | number }} <span class="currency">{{ 'PAYROLL.CURRENCY' | translate }}</span></span>
+          </div>
+        </div>
+      } @else {
+        <div class="kpi-card">
+          <div class="kpi-icon icon-budget">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">{{ 'DASHBOARD.TOTAL_EMPLOYEES' | translate }}</span>
+            <span class="kpi-value">{{ '26' }} <span class="currency">{{ 'DEPARTMENTS.EMPLOYEE' | translate }}</span></span>
+          </div>
+        </div>
+      }
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-att">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'REPORTS_PAGE.METRIC_ATTENDANCE' | translate }}</span>
+          <span class="kpi-value text-accent">{{ reportsService.companyMetrics().averageAttendanceRate }}%</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-leaves">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'REPORTS_PAGE.METRIC_LEAVES' | translate }}</span>
+          <span class="kpi-value text-warning">{{ reportsService.companyMetrics().consumedLeaveDays }} {{ 'ATTENDANCE.RECORDS' | translate }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-rec">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'REPORTS_PAGE.METRIC_HIRES' | translate }}</span>
+          <span class="kpi-value text-purple">{{ reportsService.companyMetrics().newHiresCount }} {{ 'DEPARTMENTS.EMPLOYEE' | translate }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Visual Dashboard Grid -->
+    <div class="charts-container">
+      
+      <!-- Card 1: Attendance Trend (Custom CSS/SVG Line Bar Chart) -->
+      <div class="chart-card glass-panel">
+        <h3 class="chart-title">📊 {{ 'REPORTS_PAGE.CHART_ATTENDANCE' | translate }}</h3>
+        
+        <div class="trend-chart-wrapper">
+          <div class="chart-y-axis">
+            <span>100%</span>
+            <span>95%</span>
+            <span>90%</span>
+            <span>85%</span>
+          </div>
+
+          <div class="chart-bars-area">
+            @for (item of reportsService.attendanceData(); track item.month) {
+              <div class="bar-column">
+                <div class="bar-value-label">{{ item.attendanceRate }}%</div>
+                
+                <!-- Dynamic highly aesthetic custom vertical progress bar -->
+                <div class="vertical-bar-container">
+                  <div class="vertical-bar-fill fill-glow" [style.height.%]="(item.attendanceRate - 80) * 5"></div>
+                </div>
+
+                <span class="bar-label">{{ (translateService.currentLang === 'ar' ? item.month : item.monthEn) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Leave distributions (Custom Segmented Rings) -->
+      <div class="chart-card glass-panel">
+        <h3 class="chart-title">⭕ {{ 'REPORTS_PAGE.CHART_LEAVES' | translate }}</h3>
+        
+        <div class="leave-breakdown-grid">
+          
+          <!-- Pure CSS circular rings progress side-by-side -->
+          <div class="leaves-circles-area">
+            @for (leave of reportsService.leavesBreakdown(); track leave.typeKey) {
+              <div class="circle-progress-item">
+                <div class="svg-ring-container">
+                  <svg width="68" height="68" viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="3"/>
+                    <path class="circle-fill" [attr.stroke]="leave.color" stroke-width="3" stroke-linecap="round"
+                          [attr.stroke-dasharray]="leave.percentage + ', 100'"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"/>
+                  </svg>
+                  <span class="circle-percentage">{{ leave.percentage }}%</span>
+                </div>
+                <span class="circle-label">{{ leave.typeKey | translate }}</span>
+                <span class="circle-sublabel">{{ leave.daysCount }} يوم</span>
+              </div>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 3: Departmental Allocations (Salaries for Manager / Headcount for Standard HR) -->
+      <div class="chart-card glass-panel wide-card">
+        @if (isHRManagerMode()) {
+          <h3 class="chart-title">💰 {{ 'REPORTS_PAGE.CHART_BUDGET' | translate }}</h3>
+          
+          <div class="budget-allocation-list">
+            @for (dept of reportsService.departmentBudgets(); track dept.department) {
+              <div class="budget-gauge-item">
+                <div class="gauge-header">
+                  <span class="gauge-dept-name">
+                    {{ (translateService.currentLang === 'ar' ? dept.department : dept.departmentEn) }}
+                    <span class="gauge-emp-tag">({{ dept.employeeCount }} موظف)</span>
+                  </span>
+                  <span class="gauge-numbers">
+                    <strong>{{ dept.totalPayroll | number }}</strong>
+                    <span class="gauge-slash">/</span>
+                    <span class="max-alloc">{{ dept.allocatedBudget | number }} د.أ</span>
+                  </span>
+                </div>
+
+                <!-- Premium glowing horizontal gauge bar -->
+                <div class="gauge-bar-outer">
+                  <div class="gauge-bar-fill fill-glow" 
+                       [style.width.%]="(dept.totalPayroll / dept.allocatedBudget) * 100"
+                       [ngClass]="(dept.totalPayroll / dept.allocatedBudget) > 0.9 ? 'danger-fill' : 'normal-fill'">
+                  </div>
+                </div>
+                
+                <div class="gauge-footer-meta">
+                  <span class="gauge-percentage-label">نسبة استهلاك الميزانية: {{ ((dept.totalPayroll / dept.allocatedBudget) * 100).toFixed(0) }}%</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <h3 class="chart-title">👥 توزيع أعداد الموظفين ونسب التشغيل حسب الأقسام</h3>
+          
+          <div class="budget-allocation-list">
+            @for (dept of reportsService.departmentBudgets(); track dept.department) {
+              <div class="budget-gauge-item">
+                <div class="gauge-header">
+                  <span class="gauge-dept-name">
+                    {{ (translateService.currentLang === 'ar' ? dept.department : dept.departmentEn) }}
+                  </span>
+                  <span class="gauge-numbers">
+                    <strong>{{ dept.employeeCount }}</strong>
+                    <span class="gauge-slash">/</span>
+                    <span class="max-alloc">30 موظف كلي</span>
+                  </span>
+                </div>
+
+                <div class="gauge-bar-outer">
+                  <div class="gauge-bar-fill fill-glow normal-fill" 
+                       [style.width.%]="(dept.employeeCount / 30) * 100">
+                  </div>
+                </div>
+                
+                <div class="gauge-footer-meta">
+                  <span class="gauge-percentage-label">نسبة الإشغال الوظيفي للقسم: {{ ((dept.employeeCount / 30) * 100).toFixed(0) }}%</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Card 4: Recruitment pipeline ATS funnel chevrons -->
+      <div class="chart-card glass-panel wide-card">
+        <h3 class="chart-title">🎯 {{ 'REPORTS_PAGE.CHART_RECRUITMENT' | translate }}</h3>
+        
+        <div class="funnel-pipeline-chevrons">
+          
+          <div class="funnel-step step-applied">
+            <span class="step-num">{{ reportsService.recruitmentFunnel().applied }}</span>
+            <span class="step-label">{{ 'REPORTS_PAGE.APPLICANTS' | translate }}</span>
+            <div class="chevron-tail"></div>
+          </div>
+
+          <div class="funnel-step step-interview">
+            <span class="step-num">{{ reportsService.recruitmentFunnel().interview }}</span>
+            <span class="step-label">{{ 'REPORTS_PAGE.INTERVIEWS' | translate }}</span>
+            <div class="chevron-tail"></div>
+          </div>
+
+          <div class="funnel-step step-offered">
+            <span class="step-num">{{ reportsService.recruitmentFunnel().offered }}</span>
+            <span class="step-label">{{ 'REPORTS_PAGE.OFFERS' | translate }}</span>
+            <div class="chevron-tail"></div>
+          </div>
+
+          <div class="funnel-step step-hired">
+            <span class="step-num">{{ reportsService.recruitmentFunnel().hired }}</span>
+            <span class="step-label">{{ 'REPORTS_PAGE.HIRED' | translate }}</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+  <!-- ==================== C. OFFICIAL PRINT REPORT (PDF ONLY) ==================== -->
+  <section class="official-print-sheet print-only">
+    
+    <!-- Letterhead -->
+    <header class="print-letterhead">
+      <div class="letterhead-logo">
+        <span class="logo-text">DAWAM • نظام دوام</span>
+      </div>
+      <div class="letterhead-details">
+        <h2>شركة دوام لحلول وإدارة الكوادر البشرية</h2>
+        <p>{{ 'REPORTS_PAGE.OFFICIAL_HEADER' | translate }}</p>
+        <p>عمان، المملكة الأردنية الهاشمية</p>
+      </div>
+    </header>
+
+    <hr class="print-hr">
+
+    <!-- Report Metadata -->
+    <div class="print-metadata">
+      <div>
+        <strong>عنوان التقرير:</strong>
+        <span>{{ 'REPORTS_PAGE.TITLE' | translate }}</span>
+      </div>
+      <div>
+        <strong>{{ 'REPORTS_PAGE.DATE_GENERATED' | translate }}</strong>
+        <span>{{ generatedDate }}</span>
+      </div>
+      <div>
+        <strong>الفترة المستهدفة:</strong>
+        <span>{{ selectedCycle() }} - الربع الأول / الثاني</span>
+      </div>
+      <div>
+        <strong>قسم التحليل المفلتر:</strong>
+        <span>{{ selectedDept() === 'ALL' ? 'كافة أقسام المنشأة' : selectedDept() }}</span>
+      </div>
+    </div>
+
+    <!-- Official Summary Table -->
+    <table class="print-data-table">
+      <thead>
+        <tr>
+          <th>{{ 'REPORTS_PAGE.COL_MONTH' | translate }}</th>
+          <th>{{ 'REPORTS_PAGE.COL_ATT_RATE' | translate }}</th>
+          <th>{{ 'REPORTS_PAGE.COL_LATE_RATE' | translate }}</th>
+          <th>{{ 'REPORTS_PAGE.COL_ABSENT_RATE' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of reportsService.attendanceData(); track item.month) {
+          <tr>
+            <td>{{ (translateService.currentLang === 'ar' ? item.month : item.monthEn) }}</td>
+            <td class="bold">{{ item.attendanceRate }}%</td>
+            <td>{{ item.lateRate }}%</td>
+            <td>{{ item.absentRate }}%</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- Budgets summary in PDF (HR Manager Only) -->
+    @if (selectedDept() === 'ALL' && isHRManagerMode()) {
+      <h3 class="print-section-title">💰 تفصيل الميزانيات ورواتب الأقسام لشهر مايو 2026</h3>
+      <table class="print-data-table">
+        <thead>
+          <tr>
+            <th>القسم</th>
+            <th>عدد الموظفين</th>
+            <th>مجموع رواتب الشهر الجاري</th>
+            <th>الميزانية المقررة للفترة</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (dept of reportsService.departmentBudgets(); track dept.department) {
+            <tr>
+              <td>{{ (translateService.currentLang === 'ar' ? dept.department : dept.departmentEn) }}</td>
+              <td>{{ dept.employeeCount }} موظف</td>
+              <td class="bold">{{ dept.totalPayroll | number }} د.أ</td>
+              <td>{{ dept.allocatedBudget | number }} د.أ</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <!-- Footer approvals and stamp -->
+    <footer class="print-approvals-footer">
+      <div class="approval-box">
+        <strong>{{ 'REPORTS_PAGE.AUTHORIZED_BY' | translate }}</strong>
+        <span class="auth-name">المدير العام لشركة دوام للموارد البشرية</span>
+        <div class="signature-line">التوقيع: _______________________</div>
+      </div>
+
+      <div class="stamp-box">
+        <span class="stamp-title">{{ 'REPORTS_PAGE.STAMP_SIGNATURE' | translate }}</span>
+        <div class="stamp-circle">
+          <span class="stamp-text">دوام • DAWAM</span>
+          <span class="stamp-subtext">معتمد • APPROVED</span>
+        </div>
+      </div>
+    </footer>
+
+  </section>
+
+</div>

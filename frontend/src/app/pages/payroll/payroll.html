@@ -1,0 +1,419 @@
+<div class="payroll-container animate-fade-in">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <h1>{{ 'PAYROLL.TITLE' | translate }}</h1>
+      <p>{{ 'PAYROLL.SUBTITLE' | translate }}</p>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Demo switcher for Paired Testing -->
+      <button class="btn btn-demo-role" (click)="toggleSimulatedRole()">
+        <span class="role-badge" [class.manager]="isAdminOrHR()">
+          {{ (isAdminOrHR() ? 'RECRUITMENT.ROLE_ADMIN' : 'RECRUITMENT.ROLE_EMPLOYEE') | translate }}
+        </span>
+        <span class="toggle-text">{{ 'RECRUITMENT.SWITCH_ROLE' | translate }}</span>
+      </button>
+
+      <!-- Generate slip button (Manager only) -->
+      <button class="btn btn-primary" *ngIf="isAdminOrHR()" (click)="openGenerateModal()">
+        <span class="btn-icon">+</span>
+        {{ 'PAYROLL.GENERATE_SLIP' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- General Company Stats (Only visible to Admin/HR roles) -->
+  <section class="payroll-stats" *ngIf="isAdminOrHR()">
+    <!-- Card 1: Total Cost -->
+    <div class="stat-card total-cost">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        </div>
+        <h3>{{ 'PAYROLL.TOTAL_COST' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ totalPayrollCost() | number:'1.0-0' }} <span class="currency">{{ 'PAYROLL.CURRENCY' | translate }}</span></h2>
+        <p class="stat-meta">{{ 'ATTENDANCE.TOTAL' | translate }}: {{ payrollService.payslips().length }} {{ 'EMPLOYEE.EMPLOYEES' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Card 2: Paid Amount -->
+    <div class="stat-card paid-amount">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h3>{{ 'PAYROLL.PAID_AMOUNT' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ paidSalariesAmount() | number:'1.0-0' }} <span class="currency">{{ 'PAYROLL.CURRENCY' | translate }}</span></h2>
+        <p class="stat-meta">{{ 'PAYROLL.STATUS_PAID' | translate }}: {{ paidPayslipsCount() }}</p>
+      </div>
+    </div>
+
+    <!-- Card 3: Pending Amount -->
+    <div class="stat-card pending-amount">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h3>{{ 'PAYROLL.PENDING_AMOUNT' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ pendingSalariesAmount() | number:'1.0-0' }} <span class="currency">{{ 'PAYROLL.CURRENCY' | translate }}</span></h2>
+        <p class="stat-meta">{{ 'STATUS.PENDING' | translate }}: {{ pendingPayslipsCount() }}</p>
+      </div>
+    </div>
+
+    <!-- Card 4: Average Salary -->
+    <div class="stat-card avg-salary">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        </div>
+        <h3>{{ 'PAYROLL.AVG_SALARY' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ averageNetSalary() | number:'1.0-0' }} <span class="currency">{{ 'PAYROLL.CURRENCY' | translate }}</span></h2>
+        <p class="stat-meta">/ {{ 'EMPLOYEE.EMPLOYEES' | translate }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Search Bar -->
+  <section class="controls-bar">
+    <div class="filter-tabs">
+      <button class="tab-btn" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+        {{ 'ATTENDANCE.ALL' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeFilter() === 'draft'" (click)="setFilter('draft')">
+        {{ 'PAYROLL.STATUS_DRAFT' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeFilter() === 'approved'" (click)="setFilter('approved')">
+        {{ 'PAYROLL.STATUS_APPROVED' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeFilter() === 'paid'" (click)="setFilter('paid')">
+        {{ 'PAYROLL.STATUS_PAID' | translate }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input 
+        type="text" 
+        [placeholder]="'EMPLOYEE.SEARCH_PLACEHOLDER' | translate" 
+        (input)="onSearchChange($event)"
+        [value]="searchQuery()">
+      <span class="search-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
+    </div>
+  </section>
+
+  <!-- Data Display Section -->
+  <!-- 1. Admin/HR View (Table) -->
+  <section class="payroll-content" *ngIf="isAdminOrHR()">
+    <div class="requests-list">
+      <div class="table-responsive" *ngIf="filteredPayslips().length > 0; else emptyState">
+        <table class="leaves-table">
+          <thead>
+            <tr>
+              <th>{{ 'PAYROLL.EMPLOYEE_NAME' | translate }}</th>
+              <th>{{ 'PAYROLL.MONTH' | translate }} / {{ 'PAYROLL.YEAR' | translate }}</th>
+              <th>{{ 'PAYROLL.BASIC_SALARY' | translate }}</th>
+              <th>{{ 'PAYROLL.BONUSES' | translate }}</th>
+              <th>{{ 'PAYROLL.DEDUCTIONS' | translate }}</th>
+              <th>{{ 'PAYROLL.OVERTIME' | translate }}</th>
+              <th>{{ 'PAYROLL.NET_SALARY' | translate }}</th>
+              <th>{{ 'PAYROLL.STATUS' | translate }}</th>
+              <th>{{ 'PAYROLL.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let slip of filteredPayslips()" class="table-row-animate">
+              <td class="td-employee">
+                <div class="emp-info">
+                  <div class="emp-avatar">{{ slip.employeeName?.charAt(0) }}</div>
+                  <span>{{ slip.employeeName }}</span>
+                </div>
+              </td>
+              <td class="td-period">
+                <strong>{{ getMonthName(slip.month) }} - {{ slip.year }}</strong>
+              </td>
+              <td>{{ slip.basicSalary | number:'1.0-0' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+              <td class="text-success">+{{ slip.bonuses | number:'1.0-0' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+              <td class="text-danger">-{{ slip.deductions | number:'1.0-0' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+              <td class="text-success">+{{ slip.overtime | number:'1.0-0' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+              <td class="td-net">
+                <strong>{{ slip.netSalary | number:'1.0-0' }} {{ 'PAYROLL.CURRENCY' | translate }}</strong>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(slip.status)">
+                  {{ getStatusLabel(slip.status) | translate }}
+                </span>
+              </td>
+              <td class="td-actions">
+                <div class="admin-actions">
+                  <!-- Approve Draft -->
+                  <button 
+                    *ngIf="slip.status === 'Draft'" 
+                    class="btn btn-action-approve" 
+                    (click)="approvePayslip(slip.id)">
+                    {{ 'PAYROLL.APPROVE' | translate }}
+                  </button>
+
+                  <!-- Pay Approved -->
+                  <button 
+                    *ngIf="slip.status === 'Approved'" 
+                    class="btn btn-action-pay" 
+                    (click)="payPayslip(slip.id)">
+                    {{ 'PAYROLL.PAY' | translate }}
+                  </button>
+
+                  <!-- View Payslip Receipt -->
+                  <button class="btn btn-action-view" (click)="viewPayslipDetails(slip)" [title]="'PAYROLL.VIEW_SLIP' | translate">
+                    👁
+                  </button>
+
+                  <!-- Delete Draft -->
+                  <button *ngIf="slip.status === 'Draft'" class="btn btn-action-delete" (click)="deletePayslip(slip.id)" title="حذف">
+                    🗑
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Employee View (Grid Cards) -->
+  <section class="payroll-content" *ngIf="!isAdminOrHR()">
+    <div class="employee-slips-grid" *ngIf="filteredPayslips().length > 0; else emptyState">
+      <div class="employee-slip-card table-row-animate" *ngFor="let slip of filteredPayslips()">
+        <div class="slip-card-header">
+          <div class="slip-month-icon">💵</div>
+          <div class="slip-meta">
+            <h4>{{ getMonthName(slip.month) }} {{ slip.year }}</h4>
+            <p>{{ 'PAYROLL.DATE_GENERATED' | translate }}: {{ slip.generatedAt | date:'yyyy-MM-dd' }}</p>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(slip.status)">
+            {{ getStatusLabel(slip.status) | translate }}
+          </span>
+        </div>
+        <div class="slip-card-body">
+          <div class="slip-stat">
+            <span class="label">{{ 'PAYROLL.NET_SALARY' | translate }}</span>
+            <span class="value">{{ slip.netSalary | number:'1.0-0' }} {{ 'PAYROLL.CURRENCY' | translate }}</span>
+          </div>
+        </div>
+        <div class="slip-card-footer">
+          <button class="btn btn-primary btn-block" (click)="viewPayslipDetails(slip)">
+            {{ 'PAYROLL.VIEW_SLIP' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empty State View -->
+  <ng-template #emptyState>
+    <div class="empty-state-card">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      </div>
+      <h3>{{ 'PAYROLL.NO_RECORDS' | translate }}</h3>
+      <p>{{ 'PAYROLL.SUBTITLE' | translate }}</p>
+    </div>
+  </ng-template>
+
+  <!-- 1. Formal Digital Invoice Modal (Payslip Receipt) -->
+  <div class="modal-overlay" *ngIf="showSlipDetailsModal()" (click)="closeSlipDetailsModal()">
+    <div class="modal-card payslip-invoice-modal animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header hide-on-print">
+        <h2>{{ 'PAYROLL.PAYSLIP_DETAILS' | translate }}</h2>
+        <button class="close-btn" (click)="closeSlipDetailsModal()">×</button>
+      </div>
+
+      @if (selectedPayslip(); as slip) {
+        <div class="modal-body print-area">
+          <!-- Digital Invoice Sheet -->
+          <div class="payslip-sheet">
+            <!-- Corporate Branding Header -->
+            <div class="invoice-brand-header">
+              <div class="brand-info">
+                <h2>{{ 'PAYROLL.COMPANY_TITLE' | translate }}</h2>
+                <p>{{ 'PAYROLL.COMPANY_SUB' | translate }}</p>
+              </div>
+              <div class="brand-logo-sim">DAWAM</div>
+            </div>
+
+            <div class="invoice-divider"></div>
+
+            <!-- Document Meta Details -->
+            <div class="invoice-meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">{{ 'PAYROLL.EMPLOYEE_NAME' | translate }}:</span>
+                <strong class="meta-value">{{ slip.employeeName }}</strong>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">{{ 'PAYROLL.MONTH' | translate }} / {{ 'PAYROLL.YEAR' | translate }}:</span>
+                <strong class="meta-value">{{ getMonthName(slip.month) }} - {{ slip.year }}</strong>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">ID / رقم المسير:</span>
+                <strong class="meta-value">#PAY-2026-{{ slip.id }}</strong>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">{{ 'PAYROLL.DATE_GENERATED' | translate }}:</span>
+                <strong class="meta-value">{{ slip.generatedAt | date:'yyyy-MM-dd HH:mm' }}</strong>
+              </div>
+            </div>
+
+            <!-- Breakdown Ledger Table -->
+            <table class="ledger-table">
+              <thead>
+                <tr>
+                  <th>الوصف / Description</th>
+                  <th class="text-right">المبلغ / Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ 'PAYROLL.BASIC_SALARY' | translate }} (الراتب الأساسي)</td>
+                  <td class="text-right">{{ slip.basicSalary | number:'1.2-2' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+                </tr>
+                <tr *ngIf="slip.bonuses > 0">
+                  <td>{{ 'PAYROLL.BONUSES' | translate }} (البدلات والحوافز)</td>
+                  <td class="text-right text-success">+{{ slip.bonuses | number:'1.2-2' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+                </tr>
+                <tr *ngIf="slip.overtime > 0">
+                  <td>{{ 'PAYROLL.OVERTIME' | translate }} (العمل الإضافي)</td>
+                  <td class="text-right text-success">+{{ slip.overtime | number:'1.2-2' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+                </tr>
+                <tr *ngIf="slip.deductions > 0" class="deductions-row">
+                  <td>{{ 'PAYROLL.DEDUCTIONS' | translate }} (الاستاستقطاعات والخصومات)</td>
+                  <td class="text-right text-danger">-{{ slip.deductions | number:'1.2-2' }} {{ 'PAYROLL.CURRENCY' | translate }}</td>
+                </tr>
+                <tr class="net-salary-row">
+                  <td><strong>{{ 'PAYROLL.NET_SALARY' | translate }} (صافي الأجر المحول)</strong></td>
+                  <td class="text-right net-amount">
+                    <strong>{{ slip.netSalary | number:'1.2-2' }} {{ 'PAYROLL.CURRENCY' | translate }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Signatures & Stamp block -->
+            <div class="invoice-signatures">
+              <div class="signature-line">
+                <p class="sig-title">{{ 'PAYROLL.SIGNATURE' | translate }}</p>
+                <div class="sig-space"></div>
+                <p class="sig-name">قسم الموارد البشرية</p>
+              </div>
+              
+              <div class="stamp-box">
+                <div class="stamp-circle">
+                  <span>{{ 'PAYROLL.STAMP' | translate }}</span>
+                  <span class="stamp-inner">DAWAM HR APPROVED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Print Actions Box (Hidden on Print) -->
+          <div class="invoice-actions hide-on-print">
+            <button class="btn btn-secondary" (click)="closeSlipDetailsModal()">إغلاق</button>
+            <button class="btn btn-primary" (click)="printPayslip()">
+              <span>🖨</span>
+              {{ 'PAYROLL.PRINT' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Generate Payslip Modal (Admin Form) -->
+  <div class="modal-overlay" *ngIf="showGenerateModal()" (click)="closeGenerateModal()">
+    <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ 'PAYROLL.GENERATE_SLIP' | translate }}</h2>
+        <button class="close-btn" (click)="closeGenerateModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Live Alerts -->
+        <div class="alert alert-danger" *ngIf="formError()">
+          {{ formError() | translate }}
+        </div>
+        <div class="alert alert-success" *ngIf="formSuccess()">
+          {{ formSuccess() | translate }}
+        </div>
+
+        <form (submit)="$event.preventDefault(); submitPayslip()" class="modal-form">
+          <!-- Employee Selector -->
+          <div class="form-group">
+            <label class="form-label">{{ 'PAYROLL.SELECT_EMPLOYEE' | translate }}</label>
+            <select class="form-input" (change)="onEmployeeSelect($event)">
+              <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.name }}</option>
+            </select>
+          </div>
+
+          <!-- Date Fields Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'PAYROLL.MONTH' | translate }}</label>
+              <select class="form-input" [value]="selectedMonth()" (change)="selectedMonth.set(+$any($event.target).value)">
+                <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">{{ getMonthName(m) }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'PAYROLL.YEAR' | translate }}</label>
+              <input type="number" class="form-input" [value]="selectedYear()" (input)="selectedYear.set(+$any($event.target).value)">
+            </div>
+          </div>
+
+          <div class="invoice-divider"></div>
+
+          <!-- Financial inputs Grid -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'PAYROLL.BASIC_SALARY' | translate }}</label>
+              <input type="number" class="form-input" [value]="basicSalary()" (input)="basicSalary.set(+$any($event.target).value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'PAYROLL.BONUSES' | translate }}</label>
+              <input type="number" class="form-input" [value]="bonuses()" (input)="bonuses.set(+$any($event.target).value)">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'PAYROLL.DEDUCTIONS' | translate }}</label>
+              <input type="number" class="form-input" [value]="deductions()" (input)="deductions.set(+$any($event.target).value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'PAYROLL.OVERTIME' | translate }}</label>
+              <input type="number" class="form-input" [value]="overtime()" (input)="overtime.set(+$any($event.target).value)">
+            </div>
+          </div>
+
+          <!-- Real-time Net salary calculated Preview -->
+          <div class="days-preview-box payroll-calc-box">
+            <span class="preview-title">{{ 'PAYROLL.PREVIEW_CALC' | translate }}:</span>
+            <span class="preview-count">{{ calculatedNetSalary() | number:'1.0-2' }} {{ 'PAYROLL.CURRENCY' | translate }}</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeGenerateModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary">{{ 'PAYROLL.GENERATE_SLIP' | translate }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

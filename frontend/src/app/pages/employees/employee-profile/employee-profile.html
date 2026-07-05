@@ -1,0 +1,241 @@
+<div class="page-container" *ngIf="employee() as emp">
+  
+  <div class="breadcrumb-nav">
+    <a routerLink="/employees" class="back-link">
+      <span>←</span> العودة للموظفين
+    </a>
+  </div>
+
+  <div class="profile-header card">
+    <div class="profile-avatar">
+      <img *ngIf="emp.avatar" [src]="emp.avatar" alt="Avatar" class="avatar-img-lg" />
+      <div *ngIf="!emp.avatar" class="avatar-lg">{{ emp.fullName.charAt(0) }}</div>
+    </div>
+    <div class="profile-info">
+      <div class="flex-between">
+        <div>
+          <h1 class="profile-name">{{ emp.fullName }}</h1>
+          <p class="profile-title">{{ emp.jobTitle }} - {{ emp.departmentName || 'إدارة عامة' }}</p>
+        </div>
+        <button *ngIf="isAdminOrHR()" class="btn btn-secondary" [routerLink]="['/employees', emp.id, 'edit']">تعديل البيانات</button>
+      </div>
+      
+      <div class="profile-meta">
+        <span class="meta-item">
+          <i>📧</i> {{ emp.email }}
+        </span>
+        <span class="meta-item">
+          <i>📱</i> {{ emp.phone }}
+        </span>
+        <span class="meta-item">
+          <i>🆔</i> {{ emp.employeeNumber }}
+        </span>
+        <span class="status-badge" [ngClass]="getStatusClass(emp.status)">{{ getStatusLabel(emp.status) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'info'" (click)="setTab('info')">المعلومات الأساسية</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'attendance'" (click)="setTab('attendance')">سجل الحضور</button>
+    <button *ngIf="canViewSensitiveData()" class="tab-btn" [class.active]="activeTab() === 'leaves'" (click)="setTab('leaves')">الإجازات</button>
+    <button *ngIf="canViewSensitiveData()" class="tab-btn" [class.active]="activeTab() === 'payroll'" (click)="setTab('payroll')">الرواتب</button>
+  </div>
+
+  <div class="tab-content">
+    
+    <!-- Tab 1: Information -->
+    @if (activeTab() === 'info') {
+      <div class="card section-card animate-fade-in">
+        <div class="card-header">
+          <h3>البيانات الوظيفية والشخصية</h3>
+        </div>
+        <div class="card-body grid-info">
+          <div class="info-group">
+            <label>تاريخ التوظيف</label>
+            <p>{{ emp.hireDate }}</p>
+          </div>
+          <div class="info-group">
+            <label>نوع العقد</label>
+            <p>{{ emp.contractType }}</p>
+          </div>
+          <div class="info-group" *ngIf="canViewSensitiveData()">
+            <label>الراتب الأساسي</label>
+            <p>{{ emp.salary | currency:'JOD':'symbol':'1.0-2' }}</p>
+          </div>
+          <div class="info-group">
+            <label>القسم</label>
+            <p>{{ emp.departmentName || 'إدارة عامة' }}</p>
+          </div>
+          <div class="info-group">
+            <label>المنصب الوظيفي</label>
+            <p>{{ emp.jobTitle }}</p>
+          </div>
+          <div class="info-group">
+            <label>المدير المباشر</label>
+            <p>{{ managerName() }}</p>
+          </div>
+          <div class="info-group">
+            <label>تاريخ الميلاد</label>
+            <p>{{ emp.dateOfBirth }}</p>
+          </div>
+          <div class="info-group">
+            <label>الجنس</label>
+            <p>{{ emp.gender === 'Male' ? 'ذكر' : 'أنثى' }}</p>
+          </div>
+          <div class="info-group">
+            <label>العنوان</label>
+            <p>{{ emp.address || 'غير محدد' }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Tab 2: Attendance -->
+    @if (activeTab() === 'attendance') {
+      <div class="card animate-fade-in">
+        <div class="card-header">
+          <h3>سجل الحضور والانصراف</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive" *ngIf="attendanceRecords().length > 0; else noAttendance">
+            <table class="profile-table">
+              <thead>
+                <tr>
+                  <th>التاريخ</th>
+                  <th>الحالة</th>
+                  <th>وقت الحضور</th>
+                  <th>وقت الانصراف</th>
+                  <th>التأخير</th>
+                  <th>العمل الإضافي</th>
+                  <th>ملاحظات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rec of attendanceRecords()">
+                  <td>{{ rec.date }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(rec.status)">{{ getStatusLabel(rec.status) }}</span>
+                  </td>
+                  <td>{{ rec.checkIn || '—' }}</td>
+                  <td>{{ rec.checkOut || '—' }}</td>
+                  <td [class.text-amber]="rec.lateMinutes > 0">{{ formatLate(rec.lateMinutes) }}</td>
+                  <td [class.text-green]="rec.overtimeMinutes > 0">{{ formatOvertime(rec.overtimeMinutes) }}</td>
+                  <td>{{ rec.notes || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noAttendance>
+            <p class="text-center text-light" style="padding: 2rem;">لا توجد سجلات حضور مسجلة لهذا الموظف.</p>
+          </ng-template>
+        </div>
+      </div>
+    }
+
+    <!-- Tab 3: Leaves -->
+    @if (activeTab() === 'leaves' && canViewSensitiveData()) {
+      <div class="leaves-tab-content animate-fade-in">
+        <div class="balances-grid" *ngIf="leaveBalance() as bal">
+          <div class="bal-card annual-card">
+            <h4>إجازة سنوية</h4>
+            <div class="bal-val">{{ bal.annual - bal.annualUsed }} <span>/ {{ bal.annual }} يوم</span></div>
+            <p>مستهلك: {{ bal.annualUsed }} يوم</p>
+          </div>
+          <div class="bal-card sick-card">
+            <h4>إجازة مرضية</h4>
+            <div class="bal-val">{{ bal.sick - bal.sickUsed }} <span>/ {{ bal.sick }} يوم</span></div>
+            <p>مستهلك: {{ bal.sickUsed }} يوم</p>
+          </div>
+          <div class="bal-card emergency-card">
+            <h4>إجازة اضطرارية</h4>
+            <div class="bal-val">{{ bal.emergency - bal.emergencyUsed }} <span>/ {{ bal.emergency }} يوم</span></div>
+            <p>مستهلك: {{ bal.emergencyUsed }} يوم</p>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-header">
+            <h3>سجل طلبات الإجازة</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive" *ngIf="leaveRequests().length > 0; else noLeaves">
+              <table class="profile-table">
+                <thead>
+                  <tr>
+                    <th>النوع</th>
+                    <th>الفترة</th>
+                    <th>الأيام</th>
+                    <th>السبب</th>
+                    <th>الحالة</th>
+                    <th>الاعتماد</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let req of leaveRequests()">
+                    <td>
+                      <span class="type-badge" [ngClass]="getLeaveTypeClass(req.leaveType)">{{ getLeaveTypeLabel(req.leaveType) }}</span>
+                    </td>
+                    <td>{{ req.startDate }} ➔ {{ req.endDate }}</td>
+                    <td><strong>{{ req.totalDays }}</strong></td>
+                    <td>{{ req.reason }}</td>
+                    <td>
+                      <span class="status-badge" [ngClass]="getStatusClass(req.status)">{{ getStatusLabel(req.status) }}</span>
+                    </td>
+                    <td>{{ req.approvedByName || '—' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noLeaves>
+              <p class="text-center text-light" style="padding: 2rem;">لا توجد طلبات إجازة مسجلة لهذا الموظف.</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Tab 4: Payroll -->
+    @if (activeTab() === 'payroll' && canViewSensitiveData()) {
+      <div class="card animate-fade-in">
+        <div class="card-header">
+          <h3>سجل كشوفات الرواتب</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive" *ngIf="payslips().length > 0; else noPayroll">
+            <table class="profile-table">
+              <thead>
+                <tr>
+                  <th>الفترة المالية</th>
+                  <th>الراتب الأساسي</th>
+                  <th>البدلات والعمل الإضافي</th>
+                  <th>الخصومات</th>
+                  <th>صافي الراتب</th>
+                  <th>الحالة</th>
+                  <th>تاريخ الإصدار</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let slip of payslips()">
+                  <td>الشهر {{ slip.month }} / {{ slip.year }}</td>
+                  <td>{{ slip.basicSalary | currency:'JOD' }}</td>
+                  <td class="text-green">+{{ (slip.bonuses + slip.overtime) | currency:'JOD' }}</td>
+                  <td class="text-red">-{{ slip.deductions | currency:'JOD' }}</td>
+                  <td><strong>{{ slip.netSalary | currency:'JOD' }}</strong></td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(slip.status)">{{ getStatusLabel(slip.status) }}</span>
+                  </td>
+                  <td>{{ slip.generatedAt | date:'yyyy-MM-dd' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noPayroll>
+            <p class="text-center text-light" style="padding: 2rem;">لا توجد كشوفات رواتب صادرة لهذا الموظف.</p>
+          </ng-template>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

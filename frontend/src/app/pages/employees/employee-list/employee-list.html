@@ -1,0 +1,69 @@
+<div class="page-container">
+  
+  <div class="page-header">
+    <div>
+      <p class="page-subtitle">{{ 'EMPLOYEE.LIST_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" routerLink="/employees/new">
+        {{ 'EMPLOYEE.ADD_NEW' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header flex-between">
+      <div class="search-box">
+        <input type="text" class="form-input" [placeholder]="'EMPLOYEE.SEARCH_PLACEHOLDER' | translate" />
+      </div>
+      <div class="filter-actions">
+        <select class="form-input">
+          <option value="">{{ 'EMPLOYEE.ALL_DEPARTMENTS' | translate }}</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'EMPLOYEE.NAME' | translate }}</th>
+            <th>{{ 'EMPLOYEE.JOB_TITLE' | translate }}</th>
+            <th>{{ 'EMPLOYEE.DEPARTMENT' | translate }}</th>
+            <th>{{ 'EMPLOYEE.EMAIL' | translate }}</th>
+            <th>{{ 'EMPLOYEE.STATUS' | translate }}</th>
+            <th>{{ 'ACTIONS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (emp of employees(); track emp.id) {
+            <tr>
+              <td>
+                <div class="employee-cell">
+                  <div class="avatar-sm">{{ emp.name.charAt(0) }}</div>
+                  <span>{{ emp.name }}</span>
+                </div>
+              </td>
+              <td>{{ emp.position }}</td>
+              <td>{{ emp.department }}</td>
+              <td>{{ emp.email }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="emp.statusCode === 'Active'" [class.badge-warning]="emp.statusCode === 'OnLeave'">
+                  {{ emp.status | translate }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-icon" [routerLink]="['/employees', emp.id]" [title]="'ACTIONS.VIEW' | translate">👁</button>
+                  <button class="btn-icon text-primary" [routerLink]="['/employees', emp.id, 'edit']" [title]="'ACTIONS.EDIT' | translate">✏️</button>
+                  <button class="btn-icon text-danger" (click)="deleteEmployee(emp.id)" [title]="'ACTIONS.DELETE' | translate">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

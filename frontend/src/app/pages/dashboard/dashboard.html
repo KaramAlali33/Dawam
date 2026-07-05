@@ -1,0 +1,90 @@
+<div class="dashboard-page">
+
+  <h2 class="dashboard-title">{{ 'DASHBOARD.TITLE' | translate }}</h2>
+
+  <!-- Top Statistics Grid -->
+  <div class="stats-grid">
+    @for (stat of attendanceStats(); track stat.title) {
+      <div class="stat-card">
+        <div class="stat-icon-wrapper">
+          <img [src]="stat.icon" [alt]="stat.title | translate" class="stat-img-icon" [ngClass]="stat.iconClass || ''">
+        </div>
+        <div class="stat-info">
+          <h3 class="stat-title">{{ stat.title | translate }}</h3>
+          <p class="stat-value">{{ stat.value }}</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Bottom Split Section -->
+  <div class="dashboard-split">
+    
+    <!-- Quick Stats Container -->
+    <div class="quick-stats-container">
+      <h3 class="section-title">{{ 'NAV.REPORTS' | translate }}</h3>
+      
+      @for (q of quickStats(); track q.label) {
+        <div class="card mini-card">
+          <div class="mini-card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="mini-card-details">
+            <span class="mini-card-label">{{ q.label | translate }}</span>
+            <span class="mini-card-value">{{ q.value }}</span>
+          </div>
+        </div>
+      }
+
+      <div class="card mini-card highlight-card mt-2">
+        <div class="mini-card-details w-full">
+          <span class="mini-card-label">{{ topDisciplined().label | translate }}</span>
+          <div class="disciplined-emp-info">
+            <div class="avatar-initials">أ.خ</div>
+            <div>
+              <p class="emp-name">{{ topDisciplined().name }}</p>
+              <p class="emp-dept">{{ topDisciplined().department }}</p>
+            </div>
+            <div class="badge-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Leaves -->
+    <div class="card leaves-card">
+      <div class="card-header">
+        <h3 class="card-title">{{ 'DASHBOARD.PENDING_LEAVES' | translate }}</h3>
+        <button class="btn btn-primary sm-btn">{{ 'DASHBOARD.VIEW_ALL' | translate }}</button>
+      </div>
+      <div class="card-body">
+        <div class="leaves-list">
+          @for (leave of recentLeaves(); track leave.name) {
+            <div class="leave-item">
+              <div class="leave-info">
+                <div class="leave-avatar initials-avatar">
+                  {{ leave.name.charAt(0) }}
+                </div>
+                <div>
+                  <p class="leave-name">{{ leave.name }}</p>
+                  <p class="leave-type">{{ leave.type | translate }} - {{ leave.days }} {{ 'LEAVE.DAYS' | translate }}</p>
+                </div>
+              </div>
+              <div class="leave-status" [ngClass]="{
+                'status-pending': leave.status === 'STATUS.PENDING',
+                'status-approved': leave.status === 'STATUS.APPROVED',
+                'status-rejected': leave.status === 'STATUS.REJECTED'
+              }">
+                {{ leave.status | translate }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

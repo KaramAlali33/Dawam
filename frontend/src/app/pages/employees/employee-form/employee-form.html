@@ -1,0 +1,104 @@
+<div class="page-container">
+  
+  <div class="page-header">
+    <div class="breadcrumb-nav">
+      <a routerLink="/employees" class="back-link">
+        <span>←</span> عودة للقائمة
+      </a>
+    </div>
+    <div class="header-content">
+      <h1 class="page-title">{{ isEditMode ? 'تعديل بيانات موظف' : 'إضافة موظف جديد' }}</h1>
+      <p class="page-subtitle">قم بإدخال البيانات الأساسية والوظيفية للموظف</p>
+    </div>
+  </div>
+
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="form-container">
+    
+    <!-- القسم الأول: المعلومات الشخصية -->
+    <div class="card section-card">
+      <div class="card-header">
+        <h3>المعلومات الشخصية</h3>
+      </div>
+      <div class="card-body form-grid">
+        <div class="form-group">
+          <label class="form-label">الاسم الكامل *</label>
+          <input type="text" class="form-input" formControlName="fullName" placeholder="مثال: أحمد محمد">
+          @if (employeeForm.get('fullName')?.touched && employeeForm.get('fullName')?.invalid) {
+            <span class="error-msg">الاسم الكامل مطلوب</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني *</label>
+          <input type="email" class="form-input" formControlName="email" placeholder="email@dawam.com">
+          @if (employeeForm.get('email')?.touched && employeeForm.get('email')?.invalid) {
+            <span class="error-msg">البريد الإلكتروني غير صالح</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف *</label>
+          <input type="tel" class="form-input" formControlName="phone" placeholder="05xxxxxxxx">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">الجنس *</label>
+          <select class="form-input" formControlName="gender">
+            <option value="Male">ذكر</option>
+            <option value="Female">أنثى</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- القسم الثاني: المعلومات الوظيفية -->
+    <div class="card section-card">
+      <div class="card-header">
+        <h3>المعلومات الوظيفية</h3>
+      </div>
+      <div class="card-body form-grid">
+        <div class="form-group">
+          <label class="form-label">القسم *</label>
+          <select class="form-input" formControlName="department">
+            <option value="">اختر القسم</option>
+            @for (dept of departments; track dept) {
+              <option [value]="dept">{{ dept }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">المسمى الوظيفي *</label>
+          <input type="text" class="form-input" formControlName="jobTitle" placeholder="مثال: مهندس برمجيات">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">الراتب الأساسي *</label>
+          <input type="number" class="form-input" formControlName="salary" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">تاريخ التوظيف *</label>
+          <input type="date" class="form-input" formControlName="hireDate">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">نوع العقد *</label>
+          <select class="form-input" formControlName="contractType">
+            <option value="FullTime">دوام كامل</option>
+            <option value="PartTime">دوام جزئي</option>
+            <option value="Contract">عقد سنوي</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" routerLink="/employees">إلغاء</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'جاري الحفظ...' : (isEditMode ? 'حفظ التعديلات' : 'إضافة الموظف') }}
+      </button>
+    </div>
+
+  </form>
+</div>

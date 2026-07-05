@@ -1,0 +1,92 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>{{ 'أنشئ حساباً جديداً' }}</h2>
+      <p>{{ 'أدخل بياناتك للانضمام إلى منصة دوام' }}</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        {{ successMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="fullName">{{ 'الاسم الكامل' }}</label>
+        <input
+          type="text"
+          id="fullName"
+          class="form-input"
+          formControlName="fullName"
+          placeholder="أدخل اسمك الكامل"
+        />
+        @if (registerForm.get('fullName')?.touched && registerForm.get('fullName')?.errors?.['required']) {
+          <span class="error-text">{{ 'الاسم الكامل مطلوب' }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">{{ 'البريد الإلكتروني' }}</label>
+        <input
+          type="email"
+          id="email"
+          class="form-input"
+          formControlName="email"
+          placeholder="example@dawam.com"
+        />
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']) {
+          <span class="error-text">{{ 'البريد الإلكتروني مطلوب' }}</span>
+        }
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']) {
+          <span class="error-text">{{ 'صيغة البريد الإلكتروني غير صحيحة' }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">{{ 'كلمة المرور' }}</label>
+        <input
+          type="password"
+          id="password"
+          class="form-input"
+          formControlName="password"
+          placeholder="••••••••"
+        />
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']) {
+          <span class="error-text">{{ 'كلمة المرور مطلوبة' }}</span>
+        }
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['minlength']) {
+          <span class="error-text">{{ 'كلمة المرور يجب أن لا تقل عن 6 خانات' }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="role">{{ 'الدور / الصلاحية' }}</label>
+        <select id="role" class="form-input" formControlName="role">
+          @for (role of roles; track role.value) {
+            <option [value]="role.value">{{ role.label }}</option>
+          }
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <span>{{ 'جاري تسجيل الحساب...' }}</span>
+        } @else {
+          <span>{{ 'إنشاء الحساب' }}</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <span>{{ 'لديك حساب بالفعل؟' }}</span>
+      <a routerLink="/login">{{ 'تسجيل الدخول' }}</a>
+    </div>
+  </div>
+</div>

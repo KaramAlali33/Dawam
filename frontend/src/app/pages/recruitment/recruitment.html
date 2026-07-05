@@ -1,0 +1,475 @@
+<div class="recruitment-container animate-fade-in">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <h1>{{ 'RECRUITMENT.TITLE' | translate }}</h1>
+      <p>{{ 'RECRUITMENT.SUBTITLE' | translate }}</p>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Demo switcher for Paired Testing -->
+      <button class="btn btn-demo-role" (click)="toggleSimulatedRole()">
+        <span class="role-badge" [class.manager]="isAdminOrHR()">
+          {{ (isAdminOrHR() ? 'RECRUITMENT.ROLE_ADMIN' : 'RECRUITMENT.ROLE_EMPLOYEE') | translate }}
+        </span>
+        <span class="toggle-text">{{ 'RECRUITMENT.SWITCH_ROLE' | translate }}</span>
+      </button>
+
+      <!-- Create job opening button (Manager only) -->
+      <button class="btn btn-primary" *ngIf="isAdminOrHR()" (click)="openCreateJobModal()">
+        <span class="btn-icon">+</span>
+        {{ 'RECRUITMENT.CREATE_JOB' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- General Recruitment Stats (Manager only) -->
+  <section class="recruitment-stats" *ngIf="isAdminOrHR()">
+    <!-- Card 1: Active Jobs -->
+    <div class="stat-card active-jobs">
+      <div class="card-header">
+        <div class="card-icon">💼</div>
+        <h3>{{ 'RECRUITMENT.TOTAL_JOBS' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ totalJobsCount() }}</h2>
+        <p class="stat-meta">{{ 'RECRUITMENT.JOB_STATUS_ACTIVE' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Card 2: Active Applicants -->
+    <div class="stat-card active-applicants">
+      <div class="card-header">
+        <div class="card-icon">👥</div>
+        <h3>{{ 'RECRUITMENT.ACTIVE_APPLICANTS' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ activeApplicantsCount() }}</h2>
+        <p class="stat-meta">{{ 'STATUS.PENDING' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Card 3: Interviews -->
+    <div class="stat-card scheduled-interviews">
+      <div class="card-header">
+        <div class="card-icon">📅</div>
+        <h3>{{ 'RECRUITMENT.SCHEDULED_INTERVIEWS' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ scheduledInterviewsCount() }}</h2>
+        <p class="stat-meta">{{ 'RECRUITMENT.STATUS_INTERVIEW' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Card 4: Closed Jobs -->
+    <div class="stat-card closed-jobs">
+      <div class="card-header">
+        <div class="card-icon">🔒</div>
+        <h3>{{ 'RECRUITMENT.CLOSED_JOBS' | translate }}</h3>
+      </div>
+      <div class="card-body">
+        <h2>{{ closedJobsCount() }}</h2>
+        <p class="stat-meta">{{ 'RECRUITMENT.JOB_STATUS_CLOSED' | translate }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation view tabs (Manager only) -->
+  <section class="controls-bar" *ngIf="isAdminOrHR()">
+    <div class="filter-tabs">
+      <button class="tab-btn" [class.active]="activeTab() === 'jobs'" (click)="setTab('jobs')">
+        {{ 'RECRUITMENT.TAB_JOBS' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'applicants'" (click)="setTab('applicants')">
+        {{ 'RECRUITMENT.TAB_APPLICANTS' | translate }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input 
+        type="text" 
+        [placeholder]="'EMPLOYEE.SEARCH_PLACEHOLDER' | translate" 
+        (input)="onSearchChange($event)"
+        [value]="searchQuery()">
+      <span class="search-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
+    </div>
+  </section>
+
+  <!-- Candidate status filters subbar (Manager viewing applicants tab) -->
+  <section class="controls-bar sub-bar" *ngIf="isAdminOrHR() && activeTab() === 'applicants'">
+    <div class="filter-tabs filter-pills">
+      <button class="tab-btn pill-btn" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+        {{ 'ATTENDANCE.ALL' | translate }}
+      </button>
+      <button class="tab-btn pill-btn" [class.active]="activeFilter() === 'applied'" (click)="setFilter('applied')">
+        {{ 'RECRUITMENT.STATUS_APPLIED' | translate }}
+      </button>
+      <button class="tab-btn pill-btn" [class.active]="activeFilter() === 'interview'" (click)="setFilter('interview')">
+        {{ 'RECRUITMENT.STATUS_INTERVIEW' | translate }}
+      </button>
+      <button class="tab-btn pill-btn" [class.active]="activeFilter() === 'offered'" (click)="setFilter('offered')">
+        {{ 'RECRUITMENT.STATUS_OFFERED' | translate }}
+      </button>
+      <button class="tab-btn pill-btn" [class.active]="activeFilter() === 'hired'" (click)="setFilter('hired')">
+        {{ 'RECRUITMENT.STATUS_HIRED' | translate }}
+      </button>
+      <button class="tab-btn pill-btn" [class.active]="activeFilter() === 'rejected'" (click)="setFilter('rejected')">
+        {{ 'RECRUITMENT.STATUS_REJECTED' | translate }}
+      </button>
+    </div>
+  </section>
+
+  <!-- 1. Job postings board (Visible to Employees, or when HR toggles Jobs tab) -->
+  <section class="recruitment-content" *ngIf="!isAdminOrHR() || activeTab() === 'jobs'">
+    <div class="jobs-grid" *ngIf="filteredJobs().length > 0; else emptyState">
+      <div class="job-opening-card table-row-animate" *ngFor="let job of filteredJobs()">
+        <div class="job-card-header">
+          <span class="dept-badge">{{ job.department }}</span>
+          <span class="type-badge" [ngClass]="getJobTypeClass(job.type)">
+            {{ getJobTypeLabel(job.type) | translate }}
+          </span>
+        </div>
+        <div class="job-card-body">
+          <h3>{{ job.title }}</h3>
+          <p class="job-date">{{ 'RECRUITMENT.DATE_POSTED' | translate }}: {{ job.createdAt | date:'yyyy-MM-dd' }}</p>
+          
+          <div class="job-manager-stats" *ngIf="isAdminOrHR()">
+            <span class="stat-applicants">👥 {{ job.applicantsCount }} {{ 'RECRUITMENT.APPLICANTS' | translate }}</span>
+            <span class="status-badge" [ngClass]="getJobStatusClass(job.status)">
+              {{ getJobStatusLabel(job.status) | translate }}
+            </span>
+          </div>
+        </div>
+        <div class="job-card-footer">
+          <!-- Employee Actions -->
+          <ng-container *ngIf="!isAdminOrHR()">
+            <button class="btn btn-primary btn-block" (click)="openReferralModal(job)">
+              {{ 'RECRUITMENT.REFER_CANDIDATE' | translate }}
+            </button>
+          </ng-container>
+
+          <!-- Admin/HR Actions -->
+          <ng-container *ngIf="isAdminOrHR()">
+            <button 
+              *ngIf="job.status === 'Active'" 
+              class="btn btn-action-cancel btn-block" 
+              (click)="closeJobPosting(job.id)">
+              {{ 'RECRUITMENT.CLOSE_POSTING' | translate }}
+            </button>
+            <button 
+              *ngIf="job.status === 'Closed'" 
+              class="btn btn-action-pay btn-block" 
+              (click)="reopenJobPosting(job.id)">
+              {{ 'RECRUITMENT.OPEN_POSTING' | translate }}
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Applicants pipeline board (Manager viewing applicants tab) -->
+  <section class="recruitment-content" *ngIf="isAdminOrHR() && activeTab() === 'applicants'">
+    <div class="requests-list">
+      <div class="table-responsive" *ngIf="filteredCandidates().length > 0; else emptyState">
+        <table class="leaves-table">
+          <thead>
+            <tr>
+              <th>{{ 'RECRUITMENT.CANDIDATE_NAME' | translate }}</th>
+              <th>{{ 'RECRUITMENT.APPLIED_POSITION' | translate }}</th>
+              <th>{{ 'RECRUITMENT.DATE_APPLIED' | translate }}</th>
+              <th>{{ 'RECRUITMENT.RATING' | translate }}</th>
+              <th>{{ 'RECRUITMENT.STATUS' | translate }}</th>
+              <th>{{ 'RECRUITMENT.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cand of filteredCandidates()" class="table-row-animate">
+              <td class="td-employee">
+                <div class="emp-info">
+                  <div class="emp-avatar">{{ cand.fullName.charAt(0) }}</div>
+                  <span>{{ cand.fullName }}</span>
+                </div>
+              </td>
+              <td class="td-job">
+                <strong>{{ cand.jobTitle }}</strong>
+              </td>
+              <td>{{ cand.appliedAt | date:'yyyy-MM-dd' }}</td>
+              <td class="td-rating">
+                <!-- Star Rating component -->
+                <div class="star-rating">
+                  <span 
+                    *ngFor="let star of [1,2,3,4,5]" 
+                    class="star" 
+                    [class.filled]="star <= cand.rating"
+                    (click)="rateCandidate(cand.id, star)">
+                    ★
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="getCandidateStatusClass(cand.status)">
+                  {{ getCandidateStatusLabel(cand.status) | translate }}
+                </span>
+              </td>
+              <td class="td-actions">
+                <div class="admin-actions">
+                  <button class="btn btn-action-view" (click)="openCandidateModal(cand)">
+                    {{ 'RECRUITMENT.VIEW_CV' | translate }}
+                  </button>
+
+                  <button 
+                    *ngIf="isAdminOrHR() && cand.status !== 'Hired' && cand.status !== 'Rejected'" 
+                    class="btn btn-action-approve" 
+                    (click)="promoteCandidate(cand.id)">
+                    {{ 'RECRUITMENT.PROMOTE' | translate }}
+                  </button>
+
+                  <button 
+                    *ngIf="isAdminOrHR() && cand.status !== 'Hired' && cand.status !== 'Rejected'" 
+                    class="btn btn-action-reject" 
+                    (click)="rejectCandidate(cand.id)">
+                    ×
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empty State View -->
+  <ng-template #emptyState>
+    <div class="empty-state-card">
+      <div class="empty-icon">📂</div>
+      <h3>{{ 'RECRUITMENT.NO_RECORDS' | translate }}</h3>
+      <p>{{ 'RECRUITMENT.SUBTITLE' | translate }}</p>
+    </div>
+  </ng-template>
+
+  <!-- 1. Candidate CV Summary Modal -->
+  <div class="modal-overlay" *ngIf="showCandidateModal()" (click)="closeCandidateModal()">
+    <div class="modal-card payslip-invoice-modal animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ 'RECRUITMENT.CANDIDATE_PROFILE' | translate }}</h2>
+        <button class="close-btn" (click)="closeCandidateModal()">×</button>
+      </div>
+
+      @if (selectedCandidate(); as cand) {
+        <div class="modal-body">
+          <div class="candidate-sheet">
+            <!-- Candidate header info -->
+            <div class="cand-header-box">
+              <div class="cand-avatar-large">{{ cand.fullName.charAt(0) }}</div>
+              <div class="cand-main-info">
+                <h3>{{ cand.fullName }}</h3>
+                <p class="cand-applied-job">{{ cand.jobTitle }}</p>
+                <span class="status-badge" [ngClass]="getCandidateStatusClass(cand.status)">
+                  {{ getCandidateStatusLabel(cand.status) | translate }}
+                </span>
+              </div>
+            </div>
+
+            <div class="invoice-divider"></div>
+
+            <!-- Star Rating row -->
+            <div class="rating-row">
+              <span class="form-label">{{ 'RECRUITMENT.RATING' | translate }}:</span>
+              <div class="star-rating large-stars">
+                <span 
+                  *ngFor="let star of [1,2,3,4,5]" 
+                  class="star" 
+                  [class.filled]="star <= cand.rating"
+                  (click)="rateCandidate(cand.id, star)">
+                  ★
+                </span>
+              </div>
+            </div>
+
+            <!-- Details list -->
+            <div class="cand-details-grid">
+              <div class="meta-item">
+                <span class="meta-label">{{ 'RECRUITMENT.EMAIL' | translate }}:</span>
+                <strong class="meta-value">{{ cand.email }}</strong>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">{{ 'RECRUITMENT.PHONE' | translate }}:</span>
+                <strong class="meta-value">{{ cand.phone }}</strong>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">{{ 'RECRUITMENT.DATE_APPLIED' | translate }}:</span>
+                <strong class="meta-value">{{ cand.appliedAt | date:'yyyy-MM-dd HH:mm' }}</strong>
+              </div>
+            </div>
+
+            <div class="invoice-divider"></div>
+
+            <!-- CV details -->
+            <div class="form-group font-adjust">
+              <label class="form-label">{{ 'RECRUITMENT.RESUME_SUMMARY' | translate }}</label>
+              <div class="cv-summary-box">
+                <p>{{ cand.cvSummary }}</p>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group font-adjust">
+              <label class="form-label">{{ 'RECRUITMENT.INTERVIEW_NOTES' | translate }}</label>
+              <div class="interview-notes-box">
+                <p>{{ cand.notes || 'لا توجد ملاحظات مقابلة مسجلة بعد.' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="invoice-actions">
+            <button class="btn btn-secondary" (click)="closeCandidateModal()">إغلاق</button>
+            <ng-container *ngIf="isAdminOrHR() && cand.status !== 'Hired' && cand.status !== 'Rejected'">
+              <button class="btn btn-action-reject" (click)="rejectCandidate(cand.id)">{{ 'RECRUITMENT.REJECT' | translate }}</button>
+              <button class="btn btn-action-approve" (click)="promoteCandidate(cand.id)">{{ 'RECRUITMENT.PROMOTE' | translate }}</button>
+            </ng-container>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Create Job Opening Modal (Admin) -->
+  <div class="modal-overlay" *ngIf="showCreateJobModal()" (click)="closeCreateJobModal()">
+    <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ 'RECRUITMENT.CREATE_JOB' | translate }}</h2>
+        <button class="close-btn" (click)="closeCreateJobModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Live Alerts -->
+        <div class="alert alert-danger" *ngIf="formError()">
+          {{ formError() | translate }}
+        </div>
+        <div class="alert alert-success" *ngIf="formSuccess()">
+          {{ formSuccess() | translate }}
+        </div>
+
+        <form (submit)="$event.preventDefault(); submitJobOpening()" class="modal-form">
+          <!-- Job Title -->
+          <div class="form-group">
+            <label class="form-label">{{ 'RECRUITMENT.JOB_TITLE' | translate }}</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [placeholder]="'RECRUITMENT.JOB_TITLE' | translate"
+              [value]="newJobTitle()"
+              (input)="newJobTitle.set($any($event.target).value)">
+          </div>
+
+          <!-- Dept & Type select row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'RECRUITMENT.SELECT_DEPT' | translate }}</label>
+              <select class="form-input" [value]="newJobDept()" (change)="newJobDept.set($any($event.target).value)">
+                <option value="تقنية المعلومات">تقنية المعلومات (IT)</option>
+                <option value="الموارد البشرية">الموارد البشرية (HR)</option>
+                <option value="المالية">المالية (Finance)</option>
+                <option value="التصميم والتطوير">التصميم والتطوير (UI/UX)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'RECRUITMENT.SELECT_TYPE' | translate }}</label>
+              <select class="form-input" [value]="newJobType()" (change)="newJobType.set($any($event.target).value)">
+                <option value="FullTime">{{ 'RECRUITMENT.JOB_TYPE_FT' | translate }}</option>
+                <option value="PartTime">{{ 'RECRUITMENT.JOB_TYPE_PT' | translate }}</option>
+                <option value="Remote">{{ 'RECRUITMENT.JOB_TYPE_REMOTE' | translate }}</option>
+                <option value="Internship">{{ 'RECRUITMENT.JOB_TYPE_INT' | translate }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeCreateJobModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary">{{ 'RECRUITMENT.SUBMIT_POST' | translate }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Referral / Application Modal (Employee) -->
+  <div class="modal-overlay" *ngIf="showReferralModal()" (click)="closeReferralModal()">
+    <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+      @if (selectedJobForReferral(); as job) {
+        <div class="modal-header">
+          <h2>{{ 'RECRUITMENT.REFERRAL_DETAILS' | translate }} - {{ job.title }}</h2>
+          <button class="close-btn" (click)="closeReferralModal()">×</button>
+        </div>
+      }
+
+      <div class="modal-body">
+        <!-- Live Alerts -->
+        <div class="alert alert-danger" *ngIf="formError()">
+          {{ formError() | translate }}
+        </div>
+        <div class="alert alert-success" *ngIf="formSuccess()">
+          {{ formSuccess() | translate }}
+        </div>
+
+        <form (submit)="$event.preventDefault(); submitReferral()" class="modal-form">
+          <!-- Candidate Name -->
+          <div class="form-group">
+            <label class="form-label">{{ 'RECRUITMENT.CANDIDATE_NAME' | translate }}</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [placeholder]="'RECRUITMENT.CANDIDATE_NAME' | translate"
+              [value]="candName()"
+              (input)="candName.set($any($event.target).value)">
+          </div>
+
+          <!-- Contact Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">{{ 'RECRUITMENT.EMAIL' | translate }}</label>
+              <input 
+                type="email" 
+                class="form-input" 
+                placeholder="example@domain.com"
+                [value]="candEmail()"
+                (input)="candEmail.set($any($event.target).value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'RECRUITMENT.PHONE' | translate }}</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                placeholder="+962 7..."
+                [value]="candPhone()"
+                (input)="candPhone.set($any($event.target).value)">
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label class="form-label">{{ 'RECRUITMENT.REFERRAL_NOTES' | translate }}</label>
+            <textarea 
+              rows="3" 
+              class="form-input form-textarea" 
+              [placeholder]="'RECRUITMENT.REFERRAL_NOTES' | translate"
+              [value]="referralNotes()"
+              (input)="referralNotes.set($any($event.target).value)"></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeReferralModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary">{{ 'RECRUITMENT.SUBMIT_REFERRAL' | translate }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

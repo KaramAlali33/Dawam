@@ -1,0 +1,107 @@
+<header class="app-header">
+
+  <!-- Page Title Area -->
+  <div class="header-start">
+    <h2 class="page-title">{{ pageTitle() | translate }}</h2>
+  </div>
+
+  <!-- Actions Area -->
+  <div class="header-end">
+
+    <!-- Dark Mode Toggle -->
+    <button class="header-btn" (click)="toggleDarkMode()" title="تغيير المظهر">
+      @if (isDarkMode()) {
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      }
+    </button>
+
+    <!-- Language Toggle -->
+    <button class="header-btn lang-toggle" (click)="toggleLanguage()" [title]="'LANGUAGE' | translate">
+      <span class="lang-label">{{ currentLang === 'ar' ? 'EN' : 'عربي' }}</span>
+    </button>
+
+    <!-- Notifications -->
+    <div class="dropdown-wrapper">
+      <button class="header-btn notification-btn" (click)="toggleNotifications()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notification-badge">3</span>
+      </button>
+
+      @if (showNotifications()) {
+        <div class="dropdown-menu notifications-dropdown">
+          <div class="dropdown-header">
+            <span>{{ 'NAV.NOTIFICATIONS' | translate }}</span>
+          </div>
+          <div class="notification-item unread">
+            <span class="notif-icon success">✓</span>
+            <div class="notif-content">
+              <p class="notif-text">{{ 'NOTIF.LEAVE_APPROVED' | translate }}</p>
+              <span class="notif-time">{{ 'NOTIF.MINUTES_AGO' | translate }}</span>
+            </div>
+          </div>
+          <div class="notification-item unread">
+            <span class="notif-icon warning">⚠</span>
+            <div class="notif-content">
+              <p class="notif-text">{{ 'NOTIF.LATE_EMPLOYEE' | translate }}</p>
+              <span class="notif-time">{{ 'NOTIF.HOUR_AGO' | translate }}</span>
+            </div>
+          </div>
+          <div class="notification-item">
+            <span class="notif-icon info">ℹ</span>
+            <div class="notif-content">
+              <p class="notif-text">{{ 'NOTIF.CONTRACT_EXPIRY' | translate }}</p>
+              <span class="notif-time">{{ 'NOTIF.YESTERDAY' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- User Menu -->
+    <div class="dropdown-wrapper">
+      <button class="user-menu-btn" (click)="toggleUserMenu()">
+        <div class="user-avatar">
+          {{ authService.currentUser()?.fullName?.charAt(0) || 'U' }}
+        </div>
+        @if (authService.currentUser(); as user) {
+          <div class="user-info">
+            <span class="user-name">{{ user.fullName }}</span>
+            <span class="user-role">{{ user.role }}</span>
+          </div>
+        }
+      </button>
+
+      @if (showUserMenu()) {
+        <div class="dropdown-menu user-dropdown">
+          <button class="dropdown-item" (click)="goToProfile()">
+            <span>👤</span>
+            <span>{{ 'USER.PROFILE' | translate }}</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" (click)="logout()">
+            <span>🚪</span>
+            <span>{{ 'USER.LOGOUT' | translate }}</span>
+          </button>
+        </div>
+      }
+    </div>
+
+  </div>
+</header>

@@ -1,0 +1,54 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <p class="page-subtitle">{{ 'DEPARTMENTS.LIST_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" routerLink="/departments/new">
+        {{ 'DEPARTMENTS.ADD_NEW' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="search-box">
+        <input type="text" class="form-input" [placeholder]="'DEPARTMENTS.SEARCH_PLACEHOLDER' | translate" />
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'DEPARTMENTS.NAME' | translate }}</th>
+            <th>{{ 'DEPARTMENTS.MANAGER' | translate }}</th>
+            <th>{{ 'DEPARTMENTS.EMPLOYEE_COUNT' | translate }}</th>
+            <th>{{ 'DEPARTMENTS.BUDGET' | translate }}</th>
+            <th>{{ 'ACTIONS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (dept of departments(); track dept.id) {
+            <tr>
+              <td><strong>{{ dept.name }}</strong></td>
+              <td>
+                <div class="employee-cell">
+                  <div class="avatar-sm">{{ dept.manager.charAt(0) }}</div>
+                  <span>{{ dept.manager }}</span>
+                </div>
+              </td>
+              <td><span class="badge badge-info">{{ dept.employeeCount }} {{ 'DEPARTMENTS.EMPLOYEE' | translate }}</span></td>
+              <td>{{ dept.budget | currency:'USD' }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-icon text-primary" [routerLink]="['/departments', dept.id, 'edit']" [title]="'ACTIONS.EDIT' | translate">✏️</button>
+                  <button class="btn-icon text-danger" (click)="deleteDepartment(dept.id)" [title]="'ACTIONS.DELETE' | translate">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

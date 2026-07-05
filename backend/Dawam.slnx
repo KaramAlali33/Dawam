@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dawam.API/Dawam.API.csproj" />
+    <Project Path="src/Dawam.Application/Dawam.Application.csproj" />
+    <Project Path="src/Dawam.Domain/Dawam.Domain.csproj" />
+    <Project Path="src/Dawam.Infrastructure/Dawam.Infrastructure.csproj" />
+  </Folder>
+</Solution>

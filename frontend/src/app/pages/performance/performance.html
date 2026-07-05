@@ -1,0 +1,484 @@
+<div class="performance-container animate-fade-in">
+  
+  <!-- Interactive Demo Simulation Switcher -->
+  <header class="demo-switcher-header">
+    <div class="header-info">
+      <h1 class="page-title">{{ 'PERFORMANCE_PAGE.TITLE' | translate }}</h1>
+      <p class="page-subtitle">{{ 'PERFORMANCE_PAGE.SUBTITLE' | translate }}</p>
+    </div>
+    
+    <div class="simulation-panel">
+      <span class="active-badge" [ngClass]="isAdminOrHR() ? 'badge-admin' : 'badge-employee'">
+        {{ (isAdminOrHR() ? 'RECRUITMENT.ROLE_ADMIN' : 'RECRUITMENT.ROLE_EMPLOYEE') | translate }}
+      </span>
+      <button class="btn btn-secondary btn-switch" (click)="toggleRole()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-spin">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+        {{ 'RECRUITMENT.SWITCH_ROLE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation view tabs (Accessible to both HR Specialist and HR Manager) -->
+  <section class="controls-bar" style="margin-bottom: 2rem;">
+    <div class="filter-tabs">
+      <button class="tab-btn" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">
+        📋 {{ 'PERFORMANCE_PAGE.TITLE' | translate }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'goals'" (click)="activeTab.set('goals')">
+        🎯 أهداف كادر المنشأة (KPIs)
+      </button>
+    </div>
+  </section>
+
+  <!-- Realtime Toast Alerts -->
+  @if (alertMessage()) {
+    <div class="toast-alert" [ngClass]="'toast-' + alertType()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+      </svg>
+      <span>{{ alertMessage() }}</span>
+    </div>
+  }
+
+  <!-- ==================== 1. MANAGER & HR DASHBOARD ==================== -->
+  @if (activeTab() === 'reviews') {
+    
+    <!-- KPI Analytics Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon icon-reviews">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'PERFORMANCE_PAGE.TOTAL_REVIEWS' | translate }}</span>
+          <span class="kpi-value">{{ totalReviews() }}</span>
+        </div>
+      </div>
+      
+      <div class="kpi-card">
+        <div class="kpi-icon icon-rating">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'PERFORMANCE_PAGE.AVG_RATING' | translate }}</span>
+          <span class="kpi-value">{{ avgRating() }} <span class="max-rating">/ 5.0</span></span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-pending">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'PERFORMANCE_PAGE.PENDING_REVIEWS' | translate }}</span>
+          <span class="kpi-value text-warning">{{ pendingReviewsCount() }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-performers">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">{{ 'PERFORMANCE_PAGE.HIGH_PERFORMERS' | translate }}</span>
+          <span class="kpi-value text-accent">{{ highPerformersCount() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Table Section -->
+    <div class="table-container">
+      <div class="table-header-filters">
+        <h2 class="section-title">{{ 'PERFORMANCE_PAGE.MANAGER_PANEL' | translate }}</h2>
+        
+        <div class="filter-controls">
+          <input type="text" class="search-input" [placeholder]="'PERFORMANCE_PAGE.SEARCH_PLACEHOLDER' | translate" 
+                 [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)">
+                 
+          <select class="filter-select" [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)">
+            <option value="ALL">🔍 {{ 'ATTENDANCE.ALL' | translate }}</option>
+            <option value="Draft">📝 {{ 'PERFORMANCE_PAGE.STATUS_DRAFT' | translate }}</option>
+            <option value="PendingSelf">⏳ {{ 'PERFORMANCE_PAGE.STATUS_PENDING_SELF' | translate }}</option>
+            <option value="PendingManager">⌛ {{ 'PERFORMANCE_PAGE.STATUS_PENDING_MANAGER' | translate }}</option>
+            <option value="Completed">✅ {{ 'PERFORMANCE_PAGE.STATUS_COMPLETED' | translate }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Reviews Table -->
+      <div class="table-responsive">
+        <table class="dawam-table">
+          <thead>
+            <tr>
+              <th>{{ 'PERFORMANCE_PAGE.EMPLOYEE_NAME' | translate }}</th>
+              <th>{{ 'PERFORMANCE_PAGE.DEPARTMENT' | translate }}</th>
+              <th>{{ 'PERFORMANCE_PAGE.CYCLE' | translate }}</th>
+              <th>{{ 'PERFORMANCE_PAGE.SELF_RATING' | translate }}</th>
+              <th>{{ 'PERFORMANCE_PAGE.RATING' | translate }}</th>
+              <th>{{ 'PERFORMANCE_PAGE.STATUS' | translate }}</th>
+              <th>{{ 'PERFORMANCE_PAGE.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rev of filteredReviews(); track rev.id) {
+              <tr>
+                <td class="emp-name-cell">
+                  <div class="avatar-circle">{{ rev.employeeName.charAt(0) }}</div>
+                  <div>
+                    <span class="bold-text">{{ rev.employeeName }}</span>
+                    <span class="subtext">مُقيّم: {{ rev.managerName }}</span>
+                  </div>
+                </td>
+                <td>{{ rev.department }}</td>
+                <td><span class="badge-cycle">{{ rev.reviewCycle }}</span></td>
+                <td>
+                  @if (rev.selfRating) {
+                    <div class="rating-stars-static">
+                      <span class="stars-val">{{ rev.selfRating }}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                  } @else {
+                    <span class="text-muted italic">{{ 'PERFORMANCE_PAGE.NOT_EVALUATED' | translate }}</span>
+                  }
+                </td>
+                <td>
+                  @if (rev.managerRating) {
+                    <div class="rating-stars-static manager-score">
+                      <span class="stars-val">{{ rev.managerRating }}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="star-filled-gold"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                  } @else {
+                    <span class="text-muted italic">{{ 'PERFORMANCE_PAGE.NOT_EVALUATED' | translate }}</span>
+                  }
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="'status-' + rev.status.toLowerCase()">
+                    @if (rev.status === 'Draft') { {{ 'PERFORMANCE_PAGE.STATUS_DRAFT' | translate }} }
+                    @if (rev.status === 'PendingSelf') { {{ 'PERFORMANCE_PAGE.STATUS_PENDING_SELF' | translate }} }
+                    @if (rev.status === 'PendingManager') { {{ 'PERFORMANCE_PAGE.STATUS_PENDING_MANAGER' | translate }} }
+                    @if (rev.status === 'Completed') { {{ 'PERFORMANCE_PAGE.STATUS_COMPLETED' | translate }} }
+                  </span>
+                </td>
+                <td>
+                  @if (rev.status === 'PendingSelf') {
+                    <button class="btn btn-sm btn-outline btn-evaluate" (click)="openSelfEvaluation(rev.id)" style="color: var(--primary-color, #008C8C); border-color: rgba(0, 140, 140, 0.3);">
+                      📝 تقديم بالنيابة (On Behalf)
+                    </button>
+                  } @else if (rev.status === 'PendingManager' || rev.status === 'Draft' || rev.status === 'Completed') {
+                    <button class="btn btn-sm btn-primary-gradient btn-evaluate" (click)="openManagerEvaluation(rev)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        @if (isAdminOrHR()) {
+                          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        } @else {
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        }
+                      </svg>
+                      {{ (isAdminOrHR() ? 'PERFORMANCE_PAGE.EVALUATE_BTN' : 'PERFORMANCE_PAGE.VIEW_DETAILS') | translate }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== 2. STAFF GOALS TAB ==================== -->
+  @if (activeTab() === 'goals') {
+    <div class="goals-section glass-panel animate-fade-in" style="width: 100%;">
+      <div class="panel-header-actions" style="margin-bottom: 2rem;">
+        <h3 class="panel-title" style="font-size: 1.4rem;">🎯 أهداف كادر المنشأة (KPIs)</h3>
+        <button class="btn btn-sm btn-outline btn-add-goal" (click)="showGoalModal.set(true)">
+          {{ 'PERFORMANCE_PAGE.CREATE_GOAL_BTN' | translate }}
+        </button>
+      </div>
+
+      <div class="goals-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        @for (goal of performanceService.goals(); track goal.id) {
+          <div class="goal-item-card" style="margin: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+            <div>
+              <div class="goal-header" style="margin-bottom: 0.5rem;">
+                <span class="goal-title" style="font-size: 1.1rem;">{{ goal.title }}</span>
+                <span class="goal-weight-badge">{{ 'PERFORMANCE_PAGE.GOAL_WEIGHT' | translate }}: {{ goal.weight }}%</span>
+              </div>
+              <p class="goal-desc">{{ goal.description }}</p>
+            </div>
+            
+            <div>
+              <div class="goal-progress-section" style="margin-bottom: 0.75rem;">
+                <div class="progress-bar-outer">
+                  <div class="progress-bar-inner animate-progress" [style.width.%]="goal.progress"
+                       [ngClass]="goal.progress === 100 ? 'bg-completed' : (goal.progress > 50 ? 'bg-high' : 'bg-low')">
+                  </div>
+                </div>
+                <span class="progress-percentage-text">{{ goal.progress }}%</span>
+              </div>
+
+              <div class="goal-footer-actions">
+                <span class="goal-status-text" [ngClass]="'goal-' + goal.status.toLowerCase()">
+                  @if (goal.status === 'NotStarted') { ⭕ {{ 'PERFORMANCE_PAGE.GOAL_STATUS_NOT_STARTED' | translate }} }
+                  @if (goal.status === 'InProgress') { ⚡ {{ 'PERFORMANCE_PAGE.GOAL_STATUS_IN_PROGRESS' | translate }} }
+                  @if (goal.status === 'Completed') { 🎉 {{ 'PERFORMANCE_PAGE.GOAL_STATUS_COMPLETED' | translate }} }
+                </span>
+
+                <!-- Simulation adjuster buttons -->
+                <div class="simulator-controls" title="محاكي ضبط التقدم">
+                  <button class="btn-adj minus" (click)="adjustGoalProgress(goal.id, -10)">-10%</button>
+                  <button class="btn-adj plus" (click)="adjustGoalProgress(goal.id, 10)">+10%</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL: EMPLOYEE SELF-EVALUATION ==================== -->
+  @if (showSelfEvalModal()) {
+    <div class="modal-backdrop" (click)="showSelfEvalModal.set(false)">
+      <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ 'PERFORMANCE_PAGE.MODAL_SELF_TITLE' | translate }}</h3>
+          <button class="btn-close" (click)="showSelfEvalModal.set(false)">&times;</button>
+        </div>
+        
+        <form class="modal-form" (submit)="submitSelfEval(); $event.preventDefault()">
+          <!-- Star Rating interactive selection -->
+          <div class="form-group">
+            <label class="form-label">{{ 'PERFORMANCE_PAGE.SELF_RATING' | translate }}</label>
+            <div class="stars-selector">
+              @for (score of [1, 2, 3, 4, 5]; track score) {
+                <button type="button" class="btn-star" (click)="selfRatingScore.set(score)"
+                        [ngClass]="score <= selfRatingScore() ? 'star-active' : ''">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" 
+                       [attr.fill]="score <= selfRatingScore() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="self-comments">{{ 'PERFORMANCE_PAGE.SELF_COMMENTS' | translate }}</label>
+            <textarea id="self-comments" class="form-textarea" rows="4" 
+                      [placeholder]="'PERFORMANCE_PAGE.SELF_COMMENTS_PLACEHOLDER' | translate"
+                      [value]="selfCommentsText()" (input)="selfCommentsText.set($any($event.target).value)" name="selfComments"></textarea>
+          </div>
+
+          <div class="modal-footer-btns">
+            <button type="button" class="btn btn-secondary" (click)="showSelfEvalModal.set(false)">
+              {{ 'PERFORMANCE_PAGE.CLOSE' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary-gradient">
+              {{ 'PERFORMANCE_PAGE.SUBMIT_EVALUATION' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL: MANAGER EVALUATE EMPLOYEE ==================== -->
+  @if (showManagerEvalModal()) {
+    <div class="modal-backdrop" (click)="showManagerEvalModal.set(false)">
+      <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>{{ 'PERFORMANCE_PAGE.MODAL_MANAGER_TITLE' | translate }}</h3>
+            <span class="target-emp" *ngIf="selectedReviewForManager() as r">موظف: {{ r.employeeName }} ({{ r.department }})</span>
+          </div>
+          <button class="btn-close" (click)="showManagerEvalModal.set(false)">&times;</button>
+        </div>
+
+        <form class="modal-form" (submit)="submitManagerEval(); $event.preventDefault()">
+          
+          <!-- Employee's Self-Evaluation Summary Card (if it exists) -->
+          @if (selectedReviewForManager(); as r) {
+            @if (r.selfRating || r.selfComments) {
+              <div class="feedback-comments-box" style="background: rgba(0, 140, 140, 0.05); border: 1px solid rgba(0, 140, 140, 0.15); padding: 1rem; border-radius: 12px; margin-bottom: 0.5rem; text-align: right;">
+                <strong style="color: var(--primary-color, #008C8C); font-size: 0.95rem; margin-bottom: 0.5rem; display: block;">
+                  📝 التقييم الذاتي من الموظف (Self-Evaluation)
+                </strong>
+                <div style="font-size: 0.85rem; font-weight: bold; color: #334155; margin-bottom: 0.5rem;">
+                  التقييم الذاتي العام: <span style="color: #fbbf24; font-size: 1.1rem;">★ {{ r.selfRating }} / 5</span>
+                </div>
+                <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+                  <strong>نقاط القوة والإنجازات:</strong>
+                  <p style="margin: 0.25rem 0 0; font-style: italic;">"{{ r.selfComments || 'لا توجد تعليقات إضافية.' }}"</p>
+                </div>
+              </div>
+            }
+          }
+          
+          <div class="competencies-scroller">
+            
+            <!-- Competency 1: Technical -->
+            <div class="competency-form-item">
+              <div class="comp-info">
+                <h4>{{ 'PERFORMANCE_PAGE.COMP_TECHNICAL' | translate }}</h4>
+                <p>{{ 'PERFORMANCE_PAGE.COMP_TECHNICAL_DESC' | translate }}</p>
+              </div>
+              <div class="stars-selector mini">
+                @for (score of [1,2,3,4,5]; track score) {
+                  <button type="button" class="btn-star" (click)="isAdminOrHR() ? technicalScore.set(score) : null"
+                          [style.pointer-events]="isAdminOrHR() ? 'auto' : 'none'"
+                          [style.cursor]="isAdminOrHR() ? 'pointer' : 'default'"
+                          [ngClass]="score <= technicalScore() ? 'star-active' : ''">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
+                         [attr.fill]="score <= technicalScore() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Competency 2: Communication -->
+            <div class="competency-form-item">
+              <div class="comp-info">
+                <h4>{{ 'PERFORMANCE_PAGE.COMP_COMM' | translate }}</h4>
+                <p>{{ 'PERFORMANCE_PAGE.COMP_COMM_DESC' | translate }}</p>
+              </div>
+              <div class="stars-selector mini">
+                @for (score of [1,2,3,4,5]; track score) {
+                  <button type="button" class="btn-star" (click)="isAdminOrHR() ? communicationScore.set(score) : null"
+                          [style.pointer-events]="isAdminOrHR() ? 'auto' : 'none'"
+                          [style.cursor]="isAdminOrHR() ? 'pointer' : 'default'"
+                          [ngClass]="score <= communicationScore() ? 'star-active' : ''">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
+                         [attr.fill]="score <= communicationScore() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Competency 3: Teamwork -->
+            <div class="competency-form-item">
+              <div class="comp-info">
+                <h4>{{ 'PERFORMANCE_PAGE.COMP_TEAM' | translate }}</h4>
+                <p>{{ 'PERFORMANCE_PAGE.COMP_TEAM_DESC' | translate }}</p>
+              </div>
+              <div class="stars-selector mini">
+                @for (score of [1,2,3,4,5]; track score) {
+                  <button type="button" class="btn-star" (click)="isAdminOrHR() ? teamworkScore.set(score) : null"
+                          [style.pointer-events]="isAdminOrHR() ? 'auto' : 'none'"
+                          [style.cursor]="isAdminOrHR() ? 'pointer' : 'default'"
+                          [ngClass]="score <= teamworkScore() ? 'star-active' : ''">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
+                         [attr.fill]="score <= teamworkScore() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Competency 4: Leadership -->
+            <div class="competency-form-item">
+              <div class="comp-info">
+                <h4>{{ 'PERFORMANCE_PAGE.COMP_LEAD' | translate }}</h4>
+                <p>{{ 'PERFORMANCE_PAGE.COMP_LEAD_DESC' | translate }}</p>
+              </div>
+              <div class="stars-selector mini">
+                @for (score of [1,2,3,4,5]; track score) {
+                  <button type="button" class="btn-star" (click)="isAdminOrHR() ? leadershipScore.set(score) : null"
+                          [style.pointer-events]="isAdminOrHR() ? 'auto' : 'none'"
+                          [style.cursor]="isAdminOrHR() ? 'pointer' : 'default'"
+                          [ngClass]="score <= leadershipScore() ? 'star-active' : ''">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
+                         [attr.fill]="score <= leadershipScore() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+          </div>
+
+          <div class="manager-calculated-live-rating">
+            <span class="live-label">الحساب التلقائي لمعدل التقييم:</span>
+            <span class="live-score-val text-warning">
+              {{ ((technicalScore() + communicationScore() + teamworkScore() + leadershipScore()) / 4).toFixed(2) }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="manager-comments">{{ 'PERFORMANCE_PAGE.MANAGER_COMMENTS' | translate }}</label>
+            <textarea id="manager-comments" class="form-textarea" rows="3"
+                      [placeholder]="'PERFORMANCE_PAGE.MANAGER_COMMENTS_PLACEHOLDER' | translate"
+                      [value]="managerCommentsText()" (input)="managerCommentsText.set($any($event.target).value)" 
+                      name="managerComments" [disabled]="!isAdminOrHR()"></textarea>
+          </div>
+
+          @if (!isAdminOrHR()) {
+            <div class="alert alert-info" style="margin-top: 15px; border-style: dashed; font-size: 0.85rem; text-align: right;">
+              ℹ️ للإطلاع فقط - إجراء التقييم واعتماده من صلاحيات مدير الموارد البشرية (HR Manager) حصراً.
+            </div>
+          }
+
+          <div class="modal-footer-btns">
+            <button type="button" class="btn btn-secondary" (click)="showManagerEvalModal.set(false)">
+              {{ 'PERFORMANCE_PAGE.CLOSE' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary-gradient" *ngIf="isAdminOrHR()">
+              {{ 'PERFORMANCE_PAGE.SUBMIT_EVALUATION' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL: CREATE NEW SMART GOAL ==================== -->
+  @if (showGoalModal()) {
+    <div class="modal-backdrop" (click)="showGoalModal.set(false)">
+      <div class="modal-card animate-scale-up" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ 'PERFORMANCE_PAGE.GOAL_ADD_TITLE' | translate }}</h3>
+          <button class="btn-close" (click)="showGoalModal.set(false)">&times;</button>
+        </div>
+
+        <form class="modal-form" (submit)="submitNewGoal(); $event.preventDefault()">
+          <div class="form-group">
+            <label class="form-label" for="goal-title">{{ 'PERFORMANCE_PAGE.GOAL_NAME_LABEL' | translate }}</label>
+            <input type="text" id="goal-title" class="form-input" required 
+                   placeholder="مثال: أتمتة نظام الحضور بالكامل"
+                   [value]="newGoalTitle()" (input)="newGoalTitle.set($any($event.target).value)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="goal-desc">{{ 'PERFORMANCE_PAGE.GOAL_DESC_LABEL' | translate }}</label>
+            <textarea id="goal-desc" class="form-textarea" rows="3" required
+                      placeholder="صف المعيار القابل للقياس..."
+                      [value]="newGoalDesc()" (input)="newGoalDesc.set($any($event.target).value)"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="goal-weight">{{ 'PERFORMANCE_PAGE.GOAL_WEIGHT_LABEL' | translate }}</label>
+            <input type="number" id="goal-weight" class="form-input" min="5" max="100" required
+                   [value]="newGoalWeight()" (input)="newGoalWeight.set(+$any($event.target).value)">
+          </div>
+
+          <div class="modal-footer-btns">
+            <button type="button" class="btn btn-secondary" (click)="showGoalModal.set(false)">
+              {{ 'PERFORMANCE_PAGE.CLOSE' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary-gradient">
+              ✅ {{ 'ATTENDANCE.ALL' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>

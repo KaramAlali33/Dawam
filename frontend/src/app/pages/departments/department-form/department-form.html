@@ -1,0 +1,43 @@
+<div class="page-container">
+  <div class="breadcrumb-nav">
+    <a routerLink="/departments" class="back-link"><span>←</span> عودة للأقسام</a>
+  </div>
+  <div class="page-header">
+    <h1 class="page-title">{{ isEditMode ? 'تعديل قسم' : 'إضافة قسم جديد' }}</h1>
+  </div>
+
+  <form [formGroup]="deptForm" (ngSubmit)="onSubmit()" class="form-container">
+    <div class="card section-card">
+      <div class="card-header"><h3>بيانات القسم</h3></div>
+      <div class="card-body form-grid">
+        <div class="form-group">
+          <label class="form-label">اسم القسم *</label>
+          <input type="text" class="form-input" formControlName="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">مدير القسم *</label>
+          <select class="form-input" formControlName="manager">
+            <option value="">اختر مديراً</option>
+            @for (emp of employees; track emp) {
+              <option [value]="emp">{{ emp }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الميزانية *</label>
+          <input type="number" class="form-input" formControlName="budget">
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">وصف القسم</label>
+          <textarea class="form-input" formControlName="description" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" routerLink="/departments">إلغاء</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'جاري الحفظ...' : 'حفظ القسم' }}
+      </button>
+    </div>
+  </form>
+</div>
