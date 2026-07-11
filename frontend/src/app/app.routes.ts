@@ -109,7 +109,7 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
-        loadComponent: () => import('./pages/coming-soon/coming-soon').then(m => m.ComingSoonComponent)
+        loadComponent: () => import('./pages/settings/settings').then(m => m.SettingsComponent)
       }
     ]
   },

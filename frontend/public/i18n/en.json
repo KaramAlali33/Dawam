@@ -1,6 +1,7 @@
 {
   "WELCOME": "Welcome to Dawam System",
   "LANGUAGE": "Language",
+  "READ_ONLY": "Read only",
   "ENGLISH": "English",
   "ARABIC": "Arabic",
   "HR_SYSTEM": "Dawam System",
@@ -18,10 +19,9 @@
     "FEATURE_EMPLOYEES": "Employee Management",
     "FEATURE_ATTENDANCE": "Attendance Tracking",
     "FEATURE_REPORTS": "Reports & Analytics",
-    "DEMO_TITLE": "Demo Accounts",
-    "DEMO_PASSWORD": "Password",
     "ERROR_REQUIRED": "Please fill in all fields",
-    "ERROR_INVALID": "Invalid email or password"
+    "ERROR_INVALID": "Invalid email or password",
+    "GOOGLE_SIGNIN": "Sign in with Google"
   },
 
   "NAV": {
@@ -44,6 +44,24 @@
     "LOGOUT": "Logout"
   },
 
+  "SETTINGS_PAGE": {
+    "TITLE": "Settings & Profile",
+    "SUBTITLE": "Manage your account settings, profile information, and preferences",
+    "TAB_PROFILE": "Profile Information",
+    "TAB_PREFERENCES": "Preferences",
+    "FULL_NAME": "Full Name",
+    "EMAIL": "Email Address",
+    "ROLE": "Account Role",
+    "EMPLOYEE_LINK": "Linked Employee Profile",
+    "NEW_PASSWORD": "New Password (leave blank to keep current)",
+    "SAVE_SUCCESS": "Profile updated successfully!",
+    "SAVE_ERROR": "Failed to update profile. Email might be in use.",
+    "THEME": "Visual Theme",
+    "THEME_LIGHT": "Light Mode",
+    "THEME_DARK": "Dark Mode",
+    "SAVE_BTN": "Save Changes"
+  },
+
   "DASHBOARD": {
     "TITLE": "Dashboard",
     "SUBTITLE": "Overview of your organization's performance",
@@ -54,7 +72,9 @@
     "RECENT_EMPLOYEES": "Recent Employees",
     "PENDING_LEAVES": "Pending Leave Requests",
     "DEPARTMENTS": "Employees by Department",
-    "VIEW_ALL": "View All"
+    "VIEW_ALL": "View All",
+    "TOP_EMPLOYEE": "Top Disciplined Employee",
+    "MY_ATTENDANCE_SCORE": "My Attendance Score"
   },
 
   "EMPLOYEE": {

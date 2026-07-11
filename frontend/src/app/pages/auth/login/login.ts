@@ -25,16 +25,6 @@ export class LoginComponent implements AfterViewInit {
   errorMessage = signal('');
   isLoading = signal(false);
 
-  selectDemoUser(role: string): void {
-    if (role === 'manager') {
-      this.email = 'admin@dawam.com';
-      this.password = 'Admin@123';
-    } else if (role === 'employee') {
-      this.email = 'hr@dawam.com';
-      this.password = 'Admin@123';
-    }
-  }
-
   get currentLang(): string {
     return this.translateService.currentLang || 'ar';
   }
@@ -78,10 +68,16 @@ export class LoginComponent implements AfterViewInit {
         client_id: '313268932155-dn51bpbvsjvre049nf8oonvhudj1h2bo.apps.googleusercontent.com',
         callback: (response: any) => this.handleGoogleCredentialResponse(response)
       });
-      google.accounts.id.renderButton(
-        document.getElementById('google-btn'),
-        { theme: 'outline', size: 'large', width: 380 }
-      );
+
+      setTimeout(() => {
+        const container = document.getElementById('google-btn') as HTMLElement;
+        // Render at Google's maximum supported width (400px)
+        google.accounts.id.renderButton(container, {
+          theme: 'outline',
+          size: 'large',
+          width: 400
+        });
+      }, 0);
     }
   }
 

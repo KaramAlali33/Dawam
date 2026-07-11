@@ -44,7 +44,7 @@ export class PayrollComponent implements OnInit {
       { id: 1, name: 'أحمد محمد العلي', basic: 9500 },
       { id: 2, name: 'سارة خالد الحمد', basic: 7200 },
       { id: 3, name: 'فهد عبدالله النجار', basic: 8000 },
-      { id: 4, name: 'نورة سعد القحطاني', basic: 11000 }
+      { id: 4, name: 'كرم عامر غانم', basic: 11000 }
     ];
   }
 

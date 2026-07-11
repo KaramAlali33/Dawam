@@ -75,6 +75,28 @@ export class AuthService {
     );
   }
 
+  updateProfile(profileData: { fullName: string; email: string; newPassword?: string }): Observable<boolean> {
+    return this.http.put<{ success: boolean; data: any }>(`${this.apiUrl}/profile`, profileData).pipe(
+      map(res => {
+        if (res.success) {
+          const current = this.currentUser();
+          if (current) {
+            const updatedUser: User = {
+              ...current,
+              fullName: profileData.fullName,
+              email: profileData.email
+            };
+            localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+            this.currentUser.set(updatedUser);
+          }
+          return true;
+        }
+        return false;
+      }),
+      catchError(() => of(false))
+    );
+  }
+
   logout(): void {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');

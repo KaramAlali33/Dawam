@@ -1,6 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReportsService } from '../../core/services/reports.service';
@@ -10,7 +9,7 @@ import { MonthlyAttendanceData, DepartmentBudgetData, LeaveBreakdown, Recruitmen
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './reports.html',
   styleUrl: './reports.css'
 })

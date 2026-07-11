@@ -533,6 +533,81 @@ form {
   to { transform: rotate(360deg); }
 }
 
+/* ---------- Google Sign-In Button (Custom Overlay) ---------- */
+.google-btn-wrapper {
+  margin-top: 1.25rem;
+  width: 100%;
+  position: relative;
+}
+
+/* Custom visual button — looks exactly like the login button but Google-styled */
+.btn-google-custom {
+  width: 100%;
+  padding: 0.9375rem 1.5rem;
+  border: 1.5px solid #dadce0;
+  border-radius: 10px;
+  background: #fff;
+  color: #3c4043;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  pointer-events: none; /* clicks fall through to the real Google iframe below */
+  position: relative;
+  z-index: 2;
+}
+
+/* The real Google iframe sits absolutely on top of the custom button,
+   fully transparent but fully clickable */
+.google-btn-hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Stretch the Google iframe to fill the wrapper */
+#google-btn,
+.google-btn-hidden > div,
+.google-btn-hidden iframe {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 54px;
+}
+
+/* Hover state — trigger via the wrapper since pointer-events on btn is none */
+.google-btn-wrapper:hover .btn-google-custom {
+  background: #f8f9fa;
+  border-color: #c6c9ce;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.google-btn-wrapper:active .btn-google-custom {
+  background: #f1f3f4;
+  transform: translateY(1px);
+}
+
+html.dark-mode .btn-google-custom {
+  background: #2d2d2d;
+  border-color: #5f6368;
+  color: #e8eaed;
+}
+
+html.dark-mode .google-btn-wrapper:hover .btn-google-custom {
+  background: #3a3a3a;
+  border-color: #9aa0a6;
+}
+
+
 /* ---------- Divider ---------- */
 .divider {
   display: flex;
@@ -558,67 +633,6 @@ form {
   white-space: nowrap;
 }
 
-/* ---------- Demo Credentials ---------- */
-.demo-credentials {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-.demo-card {
-  padding: 0.85rem 0.65rem;
-  border-radius: 12px;
-  background: rgba(0, 140, 140, 0.04);
-  border: 1.5px solid rgba(0, 140, 140, 0.08);
-  text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-}
-
-.demo-card:hover {
-  border-color: var(--primary-color);
-  background: rgba(0, 140, 140, 0.08);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 140, 140, 0.12);
-}
-
-.demo-card:active {
-  transform: translateY(0);
-}
-
-.demo-role {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.25rem;
-}
-
-.demo-card code {
-  font-size: 0.6875rem;
-  color: var(--text-light);
-  font-weight: 500;
-  font-family: 'Inter', monospace;
-  word-break: break-all;
-}
-
-.demo-pass-hint {
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-light);
-}
-
-.demo-pass-hint code {
-  font-size: 0.75rem;
-  background: rgba(0, 140, 140, 0.08);
-  color: var(--primary-color);
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-weight: 700;
-}
 
 /* ============================================================
    RESPONSIVE
@@ -679,11 +693,6 @@ form {
 
   .hero-title {
     font-size: 1.375rem;
-  }
-
-  .demo-credentials {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
   }
 
   .login-form-panel {

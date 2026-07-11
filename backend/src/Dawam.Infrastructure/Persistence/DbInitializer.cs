@@ -12,6 +12,17 @@ public static class DbInitializer
     {
         context.Database.EnsureCreated();
 
+        // Explicitly update employee name from Noura to Karam if they exist in the DB already
+        var existingNoura = context.Employees.FirstOrDefault(e => e.EmployeeNumber == "EMP-1004" && e.FullName.Contains("نورة"));
+        if (existingNoura != null)
+        {
+            existingNoura.FullName = "كرم عامر غانم";
+            existingNoura.FullNameAr = "كرم عامر غانم";
+            existingNoura.Email = "karam@dawam.com";
+            existingNoura.Gender = Gender.Male;
+            context.SaveChanges();
+        }
+
         // 1. Seed Employees if none exist
         if (!context.Employees.Any())
         {
@@ -71,13 +82,13 @@ public static class DbInitializer
                 new Employee
                 {
                     EmployeeNumber = "EMP-1004",
-                    FullName = "نورة سعد القحطاني",
-                    FullNameAr = "نورة سعد القحطاني",
-                    Email = "noura@dawam.com",
+                    FullName = "كرم عامر غانم",
+                    FullNameAr = "كرم عامر غانم",
+                    Email = "karam@dawam.com",
                     Phone = "+962790000004",
                     Address = "عمان، الأردن",
                     DateOfBirth = new DateTime(1996, 2, 14),
-                    Gender = Gender.Female,
+                    Gender = Gender.Male,
                     DepartmentId = 3, // Finance
                     JobTitle = "Financial Analyst",
                     Salary = 11000m,
@@ -94,7 +105,7 @@ public static class DbInitializer
             var empAhmad = context.Employees.First(e => e.EmployeeNumber == "EMP-1001");
             var empSara = context.Employees.First(e => e.EmployeeNumber == "EMP-1002");
             var empFahad = context.Employees.First(e => e.EmployeeNumber == "EMP-1003");
-            var empNoura = context.Employees.First(e => e.EmployeeNumber == "EMP-1004");
+            var empKaram = context.Employees.First(e => e.EmployeeNumber == "EMP-1004");
 
 
 
@@ -147,10 +158,10 @@ public static class DbInitializer
                     Notes = "Traffic"
                 });
 
-                // Noura - Present
+                // Karam - Present
                 attendanceRecords.Add(new AttendanceRecord
                 {
-                    EmployeeId = empNoura.Id,
+                    EmployeeId = empKaram.Id,
                     Date = date,
                     CheckIn = new TimeSpan(7, 50, 0),
                     CheckOut = new TimeSpan(16, 30, 0),
@@ -231,7 +242,7 @@ public static class DbInitializer
                 },
                 new LeaveRequest
                 {
-                    EmployeeId = empNoura.Id,
+                    EmployeeId = empKaram.Id,
                     LeaveType = LeaveType.Emergency,
                     StartDate = today.AddDays(-4),
                     EndDate = today.AddDays(-3),

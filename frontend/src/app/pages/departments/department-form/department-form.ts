@@ -20,7 +20,7 @@ export class DepartmentFormComponent implements OnInit {
   isEditMode = false;
   isSubmitting = false;
 
-  employees = ['عبدالرحمن خالد', 'سارة أحمد', 'محمد النجار', 'نورة سعد'];
+  employees = ['عبدالرحمن خالد', 'سارة أحمد', 'محمد النجار', 'كرم غانم'];
 
   ngOnInit() {
     this.deptForm = this.fb.group({

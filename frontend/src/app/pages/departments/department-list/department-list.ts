@@ -15,7 +15,7 @@ export class DepartmentListComponent {
     { id: 1, name: 'تقنية المعلومات', manager: 'عبدالرحمن خالد', employeeCount: 42, budget: 150000 },
     { id: 2, name: 'الموارد البشرية', manager: 'سارة أحمد', employeeCount: 18, budget: 85000 },
     { id: 3, name: 'المالية', manager: 'محمد النجار', employeeCount: 25, budget: 120000 },
-    { id: 4, name: 'التسويق', manager: 'نورة سعد', employeeCount: 31, budget: 200000 }
+    { id: 4, name: 'التسويق', manager: 'كرم غانم', employeeCount: 31, budget: 200000 }
   ]);
 
   deleteDepartment(id: number) {

@@ -119,27 +119,16 @@
           </button>
         </form>
 
-        <div style="margin-top: 1.25rem; display: flex; justify-content: center; width: 100%;">
-          <div id="google-btn"></div>
+        <div class="google-btn-wrapper">
+          <!-- Custom full-width button (visual only, pointer-events pass through) -->
+          <div class="btn-google-custom">
+            <img src="assets/googleIcone.svg" alt="Google" width="20" height="20">
+            <span>{{ 'LOGIN.GOOGLE_SIGNIN' | translate }}</span>
+          </div>
+          <!-- Real Google button hidden underneath (handles the auth click) -->
+          <div id="google-btn" class="google-btn-hidden"></div>
         </div>
 
-        <!-- Divider -->
-        <div class="divider">
-          <span>{{ 'LOGIN.DEMO_TITLE' | translate }}</span>
-        </div>
-
-        <!-- Demo credentials as clickable cards -->
-        <div class="demo-credentials">
-          <div class="demo-card" (click)="selectDemoUser('manager')">
-            <div class="demo-role">{{ 'RECRUITMENT.ROLE_ADMIN' | translate }}</div>
-            <code>admin&#64;dawam.com</code>
-          </div>
-          <div class="demo-card" (click)="selectDemoUser('employee')">
-            <div class="demo-role">{{ 'RECRUITMENT.ROLE_EMPLOYEE' | translate }}</div>
-            <code>hr&#64;dawam.com</code>
-          </div>
-        </div>
-        <p class="demo-pass-hint">{{ 'LOGIN.DEMO_PASSWORD' | translate }}: <code>123456</code></p>
 
       </div>
     </div>

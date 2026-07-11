@@ -44,4 +44,16 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess) return BadRequest(new { success = false, error = result.Error });
         return Ok(new { success = true, data = result.Value });
     }
+
+    /// <summary>Update current user profile</summary>
+    [HttpPut("profile")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    [ProducesResponseType(typeof(bool), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new UpdateProfileCommand(request), ct);
+        if (!result.IsSuccess) return BadRequest(new { success = false, error = result.Error });
+        return Ok(new { success = true, data = result.Value });
+    }
 }

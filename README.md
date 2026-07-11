@@ -4,18 +4,18 @@
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-- **📊 Dynamic Dashboard**: Role-based views displaying aggregate stats (working days, present, late, on leave) for Admins/HR Managers, or personal attendance summaries and leave balances for regular Employees.
-- **👥 Employee Directory & Profiles**: Comprehensive employee profiles featuring basic details, job contracts, visual avatar support, and strict role-based access control protecting sensitive information like salaries.
-- **🕒 Attendance Tracking (Check-In/Out)**: Real-time attendance logging. Regular employees can Check-In and Check-Out directly from the web client. System automatically calculates late minutes (against a 9:00 AM start) and overtime.
-- **✈️ Leave Management**: Request submission (Annual, Sick, Emergency) for employees with live-computed remaining balances. HR Managers can approve/reject requests directly in-app.
-- **💵 Payroll Processing**: Automatic payslip generation. HR can calculate net salary based on basic salary, dynamic overtime hours, bonuses, and deductions, followed by approval and payment workflows.
-- **🌐 Multilingual & RTL Support**: Localized in **Arabic (العربية)** and **English** with custom-made RTL/LTR responsive layouts.
+- **Dynamic Dashboard**: Role-based views displaying aggregate stats (working days, present, late, on leave) for Admins/HR Managers, or personal attendance summaries and leave balances for regular Employees.
+- **Employee Directory & Profiles**: Comprehensive employee profiles featuring basic details, job contracts, visual avatar support, and strict role-based access control protecting sensitive information like salaries.
+- **Attendance Tracking (Check-In/Out)**: Real-time attendance logging. Regular employees can Check-In and Check-Out directly from the web client. System automatically calculates late minutes (against a 9:00 AM start) and overtime.
+- **Leave Management**: Request submission (Annual, Sick, Emergency) for employees with live-computed remaining balances. HR Managers can approve/reject requests directly in-app.
+- **Payroll Processing**: Automatic payslip generation. HR can calculate net salary based on basic salary, dynamic overtime hours, bonuses, and deductions, followed by approval and payment workflows.
+- **Multilingual & RTL Support**: Localized in **Arabic (العربية)** and **English** with custom-made RTL/LTR responsive layouts.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 - **Core**: C# / .NET 10.0 Web API
@@ -32,7 +32,7 @@
 
 ---
 
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 - [.NET SDK 10.0](https://dotnet.microsoft.com/download)
